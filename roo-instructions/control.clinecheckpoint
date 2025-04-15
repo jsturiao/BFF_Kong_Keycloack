@@ -1,0 +1,54 @@
+**Arquivo: control.clinecheckpoint**
+
+---
+
+### ✅ CONTROLE GERAL DO PROJETO — PROGRESSO POR FASES
+
+Este arquivo serve como **registro mestre de progresso**, **controle de checkpoints** e **histórico de execução** de cada fase do projeto.
+
+Cada fase representa uma etapa **modular, incremental e compatível** com as demais, permitindo que a implementação evolua com coerência.
+
+---
+
+### 📋 STATUS DAS FASES
+
+```ini
+[Fase 01] Estrutura inicial e docker                          = ✅ CONCLUÍDO
+[Fase 02] Keycloak: configuração de realm, client e JWT       = ✅ CONCLUÍDO
+[Fase 03] Kong: conexão, roteamento e proteção por JWT        = ⬜ PENDENTE
+[Fase 04] API PHP (OO/MVC): estrutura + endpoints mock        = ⬜ PENDENTE
+[Fase 05] BFF PHP: orquestração + integração via JWT          = ⬜ PENDENTE
+[Fase 06] Login com Keycloak + sessão JWT                     = ⬜ PENDENTE
+[Fase 07] Interface frontend (Bootstrap 5 + páginas)          = ⬜ PENDENTE
+[Fase 08] Testes finais de integração e validação             = ⬜ PENDENTE
+```
+
+---
+
+### 🧭 DIRETRIZES DE PROGRESSO
+
+1. **Cada fase deve ser concluída e validada antes de prosseguir.**
+2. As fases devem ser implementadas **com máxima simplicidade e clareza**.
+3. Toda a implementação deve manter **compatibilidade progressiva entre módulos**.
+4. O Roo Code deve **consultar apenas o arquivo .clinerules da fase atual**.
+5. Ao concluir uma fase, o status deve ser atualizado aqui com a data e observações, se necessário.
+
+---
+
+### 🛠️ HISTÓRICO DE EXECUÇÃO
+
+| Fase     | Data        | Status     | Observações                                   |
+|----------|-------------|------------|-----------------------------------------------|
+| Fase 01 | 2025-04-14  | ✅ OK      | Containers sobem corretamente em rede comum. |
+| Fase 02 | 2025-04-14  | ✅ OK      | Keycloak configurado e gerando tokens JWT.   |
+
+---
+
+### 📌 NOTAS GERAIS
+- Todas as fases devem manter os nomes de containers e portas definidos na Fase 01.
+- As validações locais devem ser feitas via `curl`, navegador ou Postman antes de marcar uma fase como concluída.
+- Este arquivo nunca deve ser sobrescrito pelo Roo Code — apenas lido e atualizado sob orientação do usuário.
+
+---
+
+**Próxima Fase: `fase-03-kong.clinerules` → configurar Kong para proteção via JWT.**

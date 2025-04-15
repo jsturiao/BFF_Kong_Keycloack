@@ -1,0 +1,3 @@
+<?php
+// BFF placeholder
+phpinfo();

@@ -1,0 +1,142 @@
+**Arquivo: fase-04-api.clinerules**
+
+---
+
+### 📅 FASE 04: API PHP (OO/MVC) – Estrutura Básica + Endpoints Simulados
+
+**Objetivo principal:**
+Implementar uma API PHP orientada a objetos, com estrutura MVC enxuta e três endpoints que retornam dados simulados (mock). A API deve aceitar requisições autenticadas via JWT, através do Kong (Fase 03).
+
+---
+
+### ✏️ INSTRUÇÕES DETALHADAS DE IMPLEMENTAÇÃO
+
+#### 1. Estrutura de pastas da API
+Dentro da pasta `api/`, crie a seguinte estrutura:
+
+```
+api/
+├── Dockerfile
+├── public/
+│   └── index.php
+├── controllers/
+├── models/
+└── routes/
+```
+
+#### 2. Dockerfile da API (caso ainda não exista)
+```Dockerfile
+FROM php:8.2-apache
+COPY ./public /var/www/html/
+EXPOSE 80
+```
+
+#### 3. index.php (roteador simples)
+```php
+<?php
+require_once '../routes/web.php';
+```
+
+#### 4. routes/web.php
+```php
+<?php
+
+$uri = $_SERVER['REQUEST_URI'];
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'GET' && $uri === '/produtos') {
+    require_once '../controllers/ProdutoController.php';
+    (new ProdutoController())->listar();
+} elseif ($method === 'GET' && $uri === '/usuarios') {
+    require_once '../controllers/UsuarioController.php';
+    (new UsuarioController())->listar();
+} elseif ($method === 'GET' && $uri === '/pedidos') {
+    require_once '../controllers/PedidoController.php';
+    (new PedidoController())->listar();
+} else {
+    http_response_code(404);
+    echo json_encode(['erro' => 'Rota não encontrada']);
+}
+```
+
+#### 5. controllers/ProdutoController.php
+```php
+<?php
+class ProdutoController {
+    public function listar() {
+        header('Content-Type: application/json');
+        echo json_encode([
+            ['id' => 1, 'nome' => 'Produto A', 'preco' => 10.0],
+            ['id' => 2, 'nome' => 'Produto B', 'preco' => 15.0],
+        ]);
+    }
+}
+```
+
+#### 6. controllers/UsuarioController.php
+```php
+<?php
+class UsuarioController {
+    public function listar() {
+        header('Content-Type: application/json');
+        echo json_encode([
+            ['id' => 1, 'nome' => 'João'],
+            ['id' => 2, 'nome' => 'Maria'],
+        ]);
+    }
+}
+```
+
+#### 7. controllers/PedidoController.php
+```php
+<?php
+class PedidoController {
+    public function listar() {
+        header('Content-Type: application/json');
+        echo json_encode([
+            ['id' => 101, 'usuario' => 'João', 'total' => 100.0],
+            ['id' => 102, 'usuario' => 'Maria', 'total' => 250.0],
+        ]);
+    }
+}
+```
+
+---
+
+### 🔒 Middleware de Autenticação (simplificado)
+
+No momento, o Kong é responsável por validar o JWT. Portanto, **não é necessária revalidação do token no código PHP**. A aplicação PHP apenas assume que o Kong **não redirecionará para código PHP se o token for inválido**.
+
+Se desejar adicionar um middleware de validação JWT futuramente, ele pode ser adicionado em `public/index.php`.
+
+---
+
+### 🔍 CRITÉRIOS DE VALIDAÇÃO
+
+1. Os endpoints `GET /produtos`, `/usuarios` e `/pedidos` devem responder com JSON corretamente.
+2. As rotas devem estar acessíveis via Kong:
+```bash
+curl -H "Authorization: Bearer TOKEN_VALIDO" http://localhost:8000/api/produtos
+```
+3. A resposta deve conter os dados mockados de forma estruturada.
+4. Sem o JWT, o Kong deve barrar com 401.
+
+---
+
+### ⚠️ REGRAS DE COMPATIBILIDADE
+- A API **não deve repetir a validação do JWT** (feito via Kong).
+- As rotas devem responder de forma **determinística** (sem lógica dinâmica).
+- Os dados devem estar mockados no controller, **sem banco de dados**.
+
+---
+
+### 🚀 PRÓXIMOS PASSOS
+
+Quando essa fase for concluída com sucesso, atualize o arquivo `control.clinecheckpoint` com:
+```ini
+[Fase 04] API PHP (OO/MVC): estrutura + endpoints mock = ✅ CONCLUÍDO
+```
+
+E prossiga para:
+- `fase-05-bff.clinerules` ➔ Implementação do BFF PHP com chamadas autenticadas à API via Kong.
+

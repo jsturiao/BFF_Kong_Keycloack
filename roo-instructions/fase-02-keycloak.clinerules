@@ -1,0 +1,109 @@
+**Arquivo: fase-02-keycloak.clinerules**
+
+---
+
+### 📅 FASE 02: Keycloak – Configuração de Realm, Cliente e JWT
+
+**Objetivo principal:**
+Configurar o Keycloak para funcionar como servidor de autenticação da aplicação, emitindo tokens JWT para login e consumo da API.
+Essa configuração deve ser feita de forma que o Kong (na Fase 03) e o BFF (na Fase 05) possam usar os JWTs emitidos pelo Keycloak.
+
+---
+
+### ✏️ INSTRUÇÕES DETALHADAS DE IMPLEMENTAÇÃO
+
+#### 1. Acesso ao Keycloak
+- URL esperada: `http://localhost:8082`
+- Admin: `admin`
+- Senha: `admin`
+- Versão da imagem: `23.0.3`
+
+#### 2. Criar Realm
+- Nome do realm: `app-demo`
+
+#### 3. Criar Cliente
+- Nome: `frontend-bff`
+- Tipo de acesso: `confidential`
+- Habilitar fluxo: `Authorization Code`
+- Habilitar "Standard Flow" e "Direct Access Grants"
+- Redirecionamento válido:
+  - `http://localhost:8080/callback`
+  - `http://bff/callback`
+- URL base do cliente: `http://localhost:8080`
+- Outras configurações:
+  - Habilitar "Service Accounts" se precisar de token sem login interativo
+  - Habilitar "Fine Grain OpenID Connect Configuration"
+
+#### 4. Configurar JWT
+- Algoritmo: `RS256`
+- Acesso via JWT: ativado
+- Link público para JWKS (para o Kong validar):
+  - `http://keycloak:8080/realms/app-demo/protocol/openid-connect/certs`
+
+#### 5. Criar Roles
+- Criar duas roles:
+  - `user`
+  - `admin`
+
+#### 6. Criar Usuários de Teste
+- Usuário: `admin`
+  - Senha: `123`
+  - Roles: `admin`
+- Usuário: `usuario`
+  - Senha: `123`
+  - Roles: `user`
+
+#### 7. Validar Emissão de Tokens
+- Usar Postman ou cURL para simular login:
+```bash
+curl -X POST \
+  http://localhost:8082/realms/app-demo/protocol/openid-connect/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=frontend-bff' \
+  -d 'client_secret=SECRET_AQUI' \
+  -d 'username=admin' \
+  -d 'password=123' \
+  -d 'grant_type=password'
+```
+- O resultado deve conter:
+  - `access_token`
+  - `expires_in`
+  - `token_type: Bearer`
+
+> **Importante:** guarde esse `access_token`, pois ele será usado para testar acesso via Kong na Fase 03.
+
+---
+
+### ⚠️ REGRAS DE COMPATIBILIDADE
+- O nome do realm **deve ser** `app-demo`.
+- O nome do client **deve ser** `frontend-bff`.
+- O JWT emitido **deve usar RS256** e estar disponível no endpoint de JWKS.
+- Os nomes dos usuários e roles **devem ser idênticos** aos definidos aqui para evitar conflitos nas fases seguintes.
+
+---
+
+### 🔍 CRITÉRIOS DE VALIDAÇÃO
+
+1. Login via cURL retorna `access_token` válido.
+2. A interface web do Keycloak mostra:
+   - Realm `app-demo`
+   - Client `frontend-bff` com redirect correto
+   - Roles atribuídas
+3. JWKS acessível via:
+   - `http://localhost:8082/realms/app-demo/protocol/openid-connect/certs`
+   - `http://keycloak:8080/realms/app-demo/protocol/openid-connect/certs`
+
+---
+
+### 🚀 PRÓXIMOS PASSOS
+
+Quando essa fase for concluída com sucesso, atualize o arquivo `control.clinecheckpoint` com:
+```ini
+[Fase 02] Keycloak: configuração de realm, client e JWT = ✅ CONCLUÍDO
+```
+
+Em seguida, prossiga para a:
+- `fase-03-kong.clinerules` ➔ que usaremos o JWT emitido aqui para proteger a API via Kong.
+
+**Não prossiga se o JWT não for obtido corretamente ou se o JWKS estiver inacessível.**
+

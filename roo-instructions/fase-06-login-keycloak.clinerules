@@ -1,0 +1,118 @@
+**Arquivo: fase-06-login-keycloak.clinerules**
+
+---
+
+### 📅 FASE 06: Login com Keycloak – Fluxo OAuth2 + Sessão JWT
+
+**Objetivo principal:**
+Permitir que o usuário faça login através do Keycloak utilizando o fluxo Authorization Code (OAuth2) e que o JWT resultante seja armazenado automaticamente na sessão da aplicação BFF PHP, para ser usado nas chamadas autenticadas à API via Kong.
+
+---
+
+### ✏️ INSTRUÇÕES DETALHADAS DE IMPLEMENTAÇÃO
+
+#### 1. Criar rota `/login`
+- Essa rota redireciona o usuário para o Keycloak com os parâmetros de login via Authorization Code:
+```php
+<?php
+$client_id = 'frontend-bff';
+$redirect_uri = 'http://localhost:8080/callback';
+$auth_url = "http://localhost:8082/realms/app-demo/protocol/openid-connect/auth?response_type=code&client_id=$client_id&redirect_uri=$redirect_uri";
+
+header("Location: $auth_url");
+exit;
+```
+
+#### 2. Criar rota `/callback`
+- Após o login, o Keycloak redireciona para `/callback?code=...`
+- Essa rota deve trocar o `code` por um `access_token`:
+```php
+<?php
+session_start();
+
+if (!isset($_GET['code'])) {
+  die('Código de autorização não encontrado.');
+}
+
+$code = $_GET['code'];
+$client_id = 'frontend-bff';
+$client_secret = 'SUA_CLIENT_SECRET_AQUI';
+$redirect_uri = 'http://localhost:8080/callback';
+
+$token_url = 'http://keycloak:8080/realms/app-demo/protocol/openid-connect/token';
+
+$data = http_build_query([
+  'grant_type' => 'authorization_code',
+  'code' => $code,
+  'redirect_uri' => $redirect_uri,
+  'client_id' => $client_id,
+  'client_secret' => $client_secret
+]);
+
+$opts = [
+  'http' => [
+    'method' => 'POST',
+    'header' => 'Content-Type: application/x-www-form-urlencoded',
+    'content' => $data
+  ]
+];
+
+$context = stream_context_create($opts);
+$response = file_get_contents($token_url, false, $context);
+
+if ($response === FALSE) {
+  die('Erro ao trocar code por token.');
+}
+
+$token = json_decode($response, true);
+session_regenerate_id();
+$_SESSION['jwt'] = $token['access_token'];
+
+header('Location: /inicio');
+exit;
+```
+
+> **Importante:** o client `frontend-bff` deve estar como `confidential` e ter `client_secret` habilitado.
+
+#### 3. Menu e links de sessão
+- Adicione links nas views:
+```html
+<a href="/login">Login</a> | <a href="/logout">Logout</a>
+```
+- Em `/logout`, destrua a sessão e redirecione:
+```php
+<?php
+session_start();
+session_destroy();
+header("Location: /");
+```
+
+---
+
+### 🔍 CRITÉRIOS DE VALIDAÇÃO
+
+1. Ao acessar `/login`, o usuário é redirecionado ao Keycloak.
+2. Após login, é redirecionado de volta para `/callback`, com sessão criada.
+3. A variável `$_SESSION['jwt']` é preenchida com token JWT válido.
+4. A partir desse ponto, qualquer página protegida (produtos, pedidos, etc) funciona normalmente.
+5. Logout limpa a sessão corretamente.
+
+---
+
+### ⚠️ REGRAS DE COMPATIBILIDADE
+- O redirect URI **deve bater com o configurado no Keycloak**.
+- O JWT deve continuar compatível com o plugin JWT configurado no Kong.
+- O nome do client deve ser exatamente `frontend-bff`.
+
+---
+
+### 🚀 PRÓXIMOS PASSOS
+
+Quando essa fase estiver concluída, registre:
+```ini
+[Fase 06] Login com Keycloak + sessão JWT = ✅ CONCLUÍDO
+```
+
+E siga para:
+- `fase-07-frontend-bootstrap.clinerules` ➔ interface visual com Bootstrap 5 e navegação clara entre as páginas.
+

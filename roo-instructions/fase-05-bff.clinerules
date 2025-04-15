@@ -1,0 +1,141 @@
+**Arquivo: fase-05-bff.clinerules**
+
+---
+
+### 📅 FASE 05: BFF PHP – Integração via JWT com a API (via Kong)
+
+**Objetivo principal:**
+Implementar um Backend-for-Frontend (BFF) em PHP orientado a objetos, com estrutura limpa, responsável por:
+- Renderizar as páginas da aplicação
+- Armazenar o token JWT na sessão
+- Orquestrar chamadas para a API via Kong
+
+---
+
+### ✏️ INSTRUÇÕES DETALHADAS DE IMPLEMENTAÇÃO
+
+#### 1. Estrutura de pastas
+```
+bff/
+├── Dockerfile
+├── public/
+│   └── index.php
+├── controllers/
+├── views/
+└── routes/
+```
+
+#### 2. Dockerfile do BFF
+```Dockerfile
+FROM php:8.2-apache
+RUN docker-php-ext-install curl
+COPY ./public /var/www/html/
+EXPOSE 80
+```
+
+#### 3. index.php
+```php
+<?php
+session_start();
+require_once '../routes/web.php';
+```
+
+#### 4. routes/web.php
+```php
+<?php
+
+$uri = $_SERVER['REQUEST_URI'];
+
+if ($uri === '/' || $uri === '/inicio') {
+  require_once '../controllers/HomeController.php';
+  (new HomeController())->index();
+} elseif ($uri === '/produtos') {
+  require_once '../controllers/ProdutoController.php';
+  (new ProdutoController())->listar();
+} elseif ($uri === '/usuarios') {
+  require_once '../controllers/UsuarioController.php';
+  (new UsuarioController())->listar();
+} elseif ($uri === '/pedidos') {
+  require_once '../controllers/PedidoController.php';
+  (new PedidoController())->listar();
+} elseif ($uri === '/logout') {
+  session_destroy();
+  header('Location: /');
+} else {
+  echo 'Página não encontrada';
+}
+```
+
+#### 5. Exemplo de controller: ProdutoController.php
+```php
+<?php
+class ProdutoController {
+  public function listar() {
+    session_start();
+    if (!isset($_SESSION['jwt'])) {
+      echo 'Usuário não autenticado';
+      return;
+    }
+
+    $jwt = $_SESSION['jwt'];
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+      CURLOPT_URL => 'http://kong:8000/api/produtos',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_HTTPHEADER => ["Authorization: Bearer $jwt"]
+    ]);
+    $response = curl_exec($curl);
+    curl_close($curl);
+
+    $dados = json_decode($response, true);
+    include '../views/produtos.php';
+  }
+}
+```
+
+#### 6. views/produtos.php
+```php
+<h2>Lista de Produtos</h2>
+<ul>
+  <?php foreach ($dados as $item): ?>
+    <li><?= $item['nome'] ?> - R$ <?= $item['preco'] ?></li>
+  <?php endforeach; ?>
+</ul>
+```
+
+---
+
+### 🔐 LOGIN (será feito na Fase 06)
+Nesta fase o JWT será **armazenado manualmente na sessão** para teste. Exemplo:
+```php
+// Simula login manual
+$_SESSION['jwt'] = 'INSIRA_AQUI_UM_TOKEN_VALIDO_DO_KEYCLOAK';
+```
+
+---
+
+### 🔍 CRITÉRIOS DE VALIDAÇÃO
+
+1. A BFF deve responder em `http://localhost:8080` com menu e páginas básicas.
+2. As páginas `/produtos`, `/usuarios` e `/pedidos` devem buscar dados da API via Kong.
+3. Sem JWT válido na sessão, as páginas devem bloquear o acesso e exibir erro de autenticação.
+
+---
+
+### ⚠️ REGRAS DE COMPATIBILIDADE
+- As requisições para a API devem ser feitas via Kong (`http://kong:8000`).
+- O JWT usado deve ser o mesmo emitido na Fase 02 e aceito na Fase 03.
+- O layout da view deve ser simples e preparado para integração com Bootstrap (Fase 07).
+
+---
+
+### 🚀 PRÓXIMOS PASSOS
+
+Quando essa fase estiver concluída e validada, atualize:
+```ini
+[Fase 05] BFF PHP: orquestração + integração via JWT = ✅ CONCLUÍDO
+```
+
+E prossiga para:
+- `fase-06-login-keycloak.clinerules` → onde será feita a autenticação real com Keycloak e obtenção automática do JWT via OAuth2.
+

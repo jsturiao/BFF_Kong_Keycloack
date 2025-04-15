@@ -1,0 +1,92 @@
+**Arquivo: fase-03-kong.clinerules**
+
+---
+
+### 📅 FASE 03: Kong – Conexão com API, Roteamento e Proteção JWT (Keycloak)
+
+**Objetivo principal:**
+Configurar o Kong como API Gateway, integrando-o à API PHP criada na Fase 01 e protegendo o acesso via tokens JWT emitidos pelo Keycloak (Fase 02).
+
+---
+
+### ✏️ INSTRUÇÕES DETALHADAS DE IMPLEMENTAÇÃO
+
+#### 1. Certificar que o Kong está acessível
+- Admin API: http://localhost:8001
+- Proxy: http://localhost:8000
+
+#### 2. Criar um Serviço no Kong para a API
+```bash
+curl -i -X POST http://localhost:8001/services \
+  --data name=api-service \
+  --data url=http://api:80
+```
+
+#### 3. Criar uma Rota para o serviço
+```bash
+curl -i -X POST http://localhost:8001/services/api-service/routes \
+  --data 'paths[]=/api'
+```
+
+#### 4. Ativar o plugin JWT para a rota
+```bash
+curl -i -X POST http://localhost:8001/services/api-service/plugins \
+  --data name=jwt
+```
+
+#### 5. Criar um Consumer para o Keycloak
+```bash
+curl -i -X POST http://localhost:8001/consumers \
+  --data username=frontend-bff
+```
+
+#### 6. Registrar a chave pública do Keycloak (JWKS via RS256)
+O plugin de JWT do Kong **precisa da chave pública** para validar os tokens JWT emitidos pelo Keycloak. Use:
+
+```bash
+curl -i -X POST http://localhost:8001/consumers/frontend-bff/jwt \
+  --data "algorithm=RS256" \
+  --data "rsa_public_key=$(curl -s http://keycloak:8080/realms/app-demo/protocol/openid-connect/certs | jq -r '.keys[0].x5c[0]' | sed 's/.*/-----BEGIN CERTIFICATE-----\n&\n-----END CERTIFICATE-----/')" \
+  --data "key=frontend-bff"
+```
+> Certifique-se de que o container do Kong consegue resolver `keycloak:8080`. Use `docker exec -it kong ping keycloak` para testar.
+
+#### 7. Testar acesso com JWT
+- Utilize o `access_token` gerado na Fase 02.
+- Realize a chamada:
+```bash
+curl -i -X GET http://localhost:8000/api/produtos \
+  -H "Authorization: Bearer SEU_TOKEN_JWT_AQUI"
+```
+
+- A resposta esperada é um JSON (mesmo que a rota ainda esteja com resposta mock).
+
+---
+
+### ⚠️ REGRAS DE COMPATIBILIDADE
+- O nome do serviço no Kong **deve ser** `api-service`.
+- A rota **deve ser** `/api`.
+- O consumer **deve se chamar** `frontend-bff`, igual ao nome do cliente do Keycloak.
+- O algoritmo JWT deve ser **RS256**, compatível com o token emitido.
+- O `rsa_public_key` usado deve vir diretamente do JWKS do Keycloak configurado na Fase 02.
+
+---
+
+### 🔍 CRITÉRIOS DE VALIDAÇÃO
+
+1. A chamada para `/api/*` via porta `8000` só funciona com JWT válido.
+2. Sem JWT, ou com JWT inválido, o Kong retorna erro `401 Unauthorized`.
+3. O consumer `frontend-bff` está registrado no Kong e vinculado à chave JWT.
+
+---
+
+### 🚀 PRÓXIMOS PASSOS
+
+Quando esta fase for concluída com sucesso, atualize o arquivo `control.clinecheckpoint` com:
+```ini
+[Fase 03] Kong: conexão, roteamento e proteção por JWT = ✅ CONCLUÍDO
+```
+
+Em seguida, prossiga para:
+- `fase-04-api.clinerules` ➔ implementação dos endpoints PHP na API protegida via JWT.
+

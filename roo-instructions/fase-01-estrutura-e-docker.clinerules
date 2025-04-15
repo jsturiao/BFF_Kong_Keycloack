@@ -1,0 +1,163 @@
+**Arquivo: fase-01-estrutura-e-docker.clinerules**
+
+---
+
+### 📅 FASE 01: Estrutura Inicial do Projeto + Docker
+
+**Objetivo principal:**
+Estabelecer a estrutura de pastas e arquivos base do projeto, além de garantir o funcionamento de todos os containers em ambiente Docker de forma compatível com o futuro uso do Kong, Keycloak, API PHP e BFF PHP.
+
+---
+
+### ✏️ INSTRUÇÕES DETALHADAS DE IMPLEMENTAÇÃO
+
+#### 1. Estrutura de diretórios do projeto
+Crie a seguinte estrutura de pastas na raiz do projeto:
+
+```
+/app-root
+├── bff/
+│   ├── Dockerfile
+│   └── public/
+├── api/
+│   ├── Dockerfile
+│   └── public/
+├── kong/
+├── keycloak/
+└── docker-compose.yml
+```
+
+Cada diretório conterá os arquivos e configurações correspondentes a cada serviço.
+
+---
+
+#### 2. Dockerfile para BFF (em `bff/Dockerfile`)
+Use uma imagem base do PHP com Apache. Exemplo:
+
+```Dockerfile
+FROM php:8.2-apache
+COPY ./public /var/www/html/
+EXPOSE 80
+```
+
+---
+
+#### 3. Dockerfile para API (em `api/Dockerfile`)
+Mesmo padrão da BFF, mas para a aplicação da API:
+
+```Dockerfile
+FROM php:8.2-apache
+COPY ./public /var/www/html/
+EXPOSE 80
+```
+
+---
+
+#### 4. docker-compose.yml
+Configure todos os serviços do projeto para funcionarem em rede:
+
+```yaml
+version: '3.9'
+
+services:
+  bff:
+    build: ./bff
+    container_name: bff
+    ports:
+      - "8080:80"
+    networks:
+      - rede_app
+
+  api:
+    build: ./api
+    container_name: api
+    ports:
+      - "8081:80"
+    networks:
+      - rede_app
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.3
+    command: start-dev
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "8082:8080"
+    networks:
+      - rede_app
+
+  kong-database:
+    image: postgres:13
+    container_name: kong-database
+    environment:
+      POSTGRES_USER=kong
+      POSTGRES_PASSWORD=kong
+      POSTGRES_DB=kong
+    networks:
+      - rede_app
+
+  kong:
+    image: kong:3.4
+    container_name: kong
+    depends_on:
+      - kong-database
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-database
+      - KONG_PG_PASSWORD=kong
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+    ports:
+      - "8000:8000"   # Gateway HTTP
+      - "8001:8001"   # Admin API
+    networks:
+      - rede_app
+
+networks:
+  rede_app:
+    driver: bridge
+```
+
+---
+
+### 🔍 CRITÉRIOS DE VALIDAÇÃO
+
+1. Todos os containers devem iniciar corretamente ao executar:
+```bash
+docker-compose up -d --build
+```
+
+2. Os seguintes endpoints devem estar acessíveis no navegador ou via curl/postman:
+- http://localhost:8080 ➔ BFF (vazio por enquanto)
+- http://localhost:8081 ➔ API (vazio por enquanto)
+- http://localhost:8082 ➔ Keycloak (admin/admin)
+- http://localhost:8001 ➔ Kong Admin
+- http://localhost:8000 ➔ Kong Proxy
+
+3. Todos os serviços devem estar na mesma rede Docker (`rede_app`).
+
+4. Deve ser criada a entrada no arquivo `control.clinecheckpoint` com status:
+```ini
+[Fase 01] Estrutura inicial e docker - ✅ CONCLUÍDO
+```
+
+---
+
+### ⚠️ REGRAS DE COMPATIBILIDADE
+- Use portas padronizadas e nomes de container que serão reutilizados nas fases futuras.
+- A rede `rede_app` é obrigatória para comunicação entre BFF, API, Kong e Keycloak.
+- Os nomes `bff`, `api`, `keycloak`, `kong`, `kong-database` são fixos e **devem ser usados nos arquivos seguintes** para garantir integração progressiva.
+
+---
+
+### 🚀 PRÓXIMOS PASSOS
+Quando esta fase estiver 100% concluída, prossiga para:
+- `fase-02-keycloak.clinerules`
+
+(Não prossiga sem garantir que tudo está funcional e validado).
+
