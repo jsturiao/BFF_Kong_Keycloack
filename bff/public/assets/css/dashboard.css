@@ -1,0 +1,150 @@
+/* Dashboard Styles */
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.status-indicator {
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-indicator i {
+    font-size: 2.5rem;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-title i {
+    font-size: 1.5rem;
+}
+
+/* Status Colors */
+.status-online {
+    color: #198754;  /* Bootstrap success color */
+}
+
+.status-offline {
+    color: #dc3545;  /* Bootstrap danger color */
+}
+
+.status-warning {
+    color: #ffc107;  /* Bootstrap warning color */
+}
+
+/* Table Styles */
+.table th {
+    background-color: #f8f9fa;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Service Status Pills */
+.service-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.service-status.online {
+    background-color: #d1e7dd;
+    color: #0a3622;
+}
+
+.service-status.offline {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.service-status.warning {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+/* Response Time Indicators */
+.response-time {
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.response-time.fast {
+    color: #198754;
+}
+
+.response-time.medium {
+    color: #fd7e14;
+}
+
+.response-time.slow {
+    color: #dc3545;
+}
+
+/* Refresh Button */
+.refresh-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0d6efd;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.refresh-button:hover {
+    transform: scale(1.1);
+}
+
+.refresh-button.spinning i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .table-responsive {
+        margin: 0 -1rem;
+    }
+
+    .refresh-button {
+        bottom: 1rem;
+        right: 1rem;
+    }
+}

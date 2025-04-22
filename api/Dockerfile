@@ -1,6 +1,14 @@
 FROM php:8.2-apache
 
-# Habilitar módulos do Apache
+# Instalar dependências
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    zip \
+    unzip \
+    curl \
+    && docker-php-ext-install zip
+
+# Habilitar módulos Apache necessários
 RUN a2enmod rewrite headers
 
 # Configurar PHP
@@ -17,17 +25,14 @@ RUN mkdir -p /var/log/apache2 \
 
 # Copiar aplicação
 WORKDIR /var/www/html
-COPY public/ .
+COPY public/ public/
 
 # Configurar permissões
 RUN chown -R www-data:www-data . \
     && chmod -R 755 .
 
-# Debug: mostrar arquivos e configurações
-RUN ls -la /var/www/html \
-    && apache2ctl -M \
-    && apache2ctl -t \
-    && cat /etc/apache2/sites-available/000-default.conf
+# Verificar configuração do Apache
+RUN apache2ctl configtest
 
 EXPOSE 80
 

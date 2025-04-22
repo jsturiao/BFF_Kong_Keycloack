@@ -1,125 +1,84 @@
 <?php
-// Headers básicos
-header('Content-Type: application/json');
+// Habilitar exibição de erros em desenvolvimento
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Headers CORS
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Debug inicial
-error_log("\n=== Nova requisição API ===");
-error_log("REQUEST_URI: " . $_SERVER['REQUEST_URI']);
-error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
-error_log("QUERY_STRING: " . ($_SERVER['QUERY_STRING'] ?? 'não definido'));
-error_log("PATH_INFO: " . ($_SERVER['PATH_INFO'] ?? 'não definido'));
-
-// Lista de produtos mock
-$produtos = [
-    [
-        'id' => 1,
-        'nome' => 'Produto API 1',
-        'preco' => 100.00,
-        'descricao' => 'Produto 1 da API'
-    ],
-    [
-        'id' => 2,
-        'nome' => 'Produto API 2',
-        'preco' => 200.00,
-        'descricao' => 'Produto 2 da API'
-    ],
-    [
-        'id' => 3,
-        'nome' => 'Produto API 3',
-        'preco' => 300.00,
-        'descricao' => 'Produto 3 da API'
-    ]
-];
-
-// Se for uma requisição OPTIONS (CORS preflight)
+// Se for uma requisição OPTIONS, retorna 200
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Função para enviar resposta JSON
-function sendResponse($status, $data) {
-    http_response_code($status);
-    echo json_encode($data, JSON_PRETTY_PRINT);
-    exit;
-}
+// Debug
+error_log("\n=== Nova requisição API ===");
+error_log("URI: " . $_SERVER['REQUEST_URI']);
+error_log("Método: " . $_SERVER['REQUEST_METHOD']);
 
-// Função para verificar autenticação
-function checkAuth() {
-    $headers = getallheaders();
-    error_log("Headers da requisição: " . json_encode($headers));
+// Obtém o path da requisição
+$path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 
-    $authHeader = $headers['Authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-    if (!$authHeader) {
-        error_log("Token não encontrado");
-        return false;
-    }
-
-    error_log("Token encontrado: " . substr($authHeader, 0, 50) . "...");
-    return true;
-}
-
-// Obter path da requisição
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = trim($uri, '/');
-error_log("Path processado: '$path'");
+// Headers padrão para JSON
+header('Content-Type: application/json');
 
 // Roteamento
 try {
-    if ($path === 'produtos') {
-        error_log("Acessando rota /produtos");
-
-        if (!checkAuth()) {
-            sendResponse(401, [
-                'error' => true,
-                'message' => 'Não autorizado',
-                'debug' => [
-                    'headers' => getallheaders()
+    switch ($path) {
+        case '':
+        case 'status':
+            echo json_encode([
+                'success' => true,
+                'version' => '1.0.0',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'status' => 'online',
+                'server' => [
+                    'php_version' => PHP_VERSION,
+                    'server_software' => $_SERVER['SERVER_SOFTWARE'],
+                    'memory_usage' => memory_get_usage(true)
                 ]
             ]);
-        }
+            break;
 
-        sendResponse(200, [
-            'success' => true,
-            'source' => 'API Direta',
-            'data' => [
-                'produtos' => $produtos
-            ],
-            'debug' => [
-                'path' => $path,
-                'method' => $_SERVER['REQUEST_METHOD'],
-                'headers' => getallheaders()
-            ]
-        ]);
-    } 
-    else if ($path === '' || $path === 'status') {
-        sendResponse(200, [
-            'success' => true,
-            'message' => 'API em execução',
-            'version' => '1.0.0',
-            'time' => date('Y-m-d H:i:s')
-        ]);
-    } 
-    else {
-        error_log("Rota não encontrada: $path");
-        sendResponse(404, [
-            'error' => true,
-            'message' => 'Rota não encontrada',
-            'path' => $path
-        ]);
+        case 'health':
+        case 'healthcheck':
+            echo json_encode([
+                'status' => 'UP',
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            break;
+
+        case 'produtos':
+            echo json_encode([
+                'success' => true,
+                'message' => 'Lista de produtos',
+                'data' => [
+                    ['id' => 1, 'nome' => 'Produto 1', 'preco' => 10.00],
+                    ['id' => 2, 'nome' => 'Produto 2', 'preco' => 20.00],
+                    ['id' => 3, 'nome' => 'Produto 3', 'preco' => 30.00]
+                ]
+            ]);
+            break;
+
+        default:
+            http_response_code(404);
+            echo json_encode([
+                'error' => true,
+                'message' => 'Rota não encontrada',
+                'path' => $path
+            ]);
+            break;
     }
 } catch (Exception $e) {
     error_log("Erro na API: " . $e->getMessage());
-    sendResponse(500, [
+    http_response_code(500);
+    echo json_encode([
         'error' => true,
         'message' => 'Erro interno do servidor',
-        'debug' => [
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ]
+        'debug' => $e->getMessage()
     ]);
 }
