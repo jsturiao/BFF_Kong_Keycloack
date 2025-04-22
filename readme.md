@@ -1,98 +1,133 @@
-# Projeto: Arquitetura PHP + Kong + Keycloak + BFF
+# Arquitetura de Microsserviços com BFF, Kong, Keycloak e API
 
-Este projeto demonstra a viabilidade de uma arquitetura composta por:
+## Índice
+1. [Visão Geral](#1-visão-geral)
+2. [Diagramas de Arquitetura](#2-diagramas-de-arquitetura)
+3. [Componentes](#3-componentes)
+4. [Geração de Diagramas](#4-geração-de-diagramas)
+5. [Estrutura do Projeto](#5-estrutura-do-projeto)
 
-- **API em PHP OO/MVC** (respostas mock)
-- **Backend for Frontend (BFF) em PHP**
-- **Kong como API Gateway** com autenticação JWT
-- **Keycloak como provedor de identidade (SSO + OAuth2)**
-- **Ambiente totalmente orquestrado via Docker Compose**
+## 1. Visão Geral
+A arquitetura implementa um padrão de microsserviços seguro e escalável usando BFF, Kong, Keycloak e API REST.
 
----
+![Arquitetura de Alto Nível](./images/png/high-level-architecture.png)
 
-## ⚙️ Execução do projeto
+## 2. Diagramas de Arquitetura
 
-> Requisitos: Docker e Docker Compose instalados
+### 2.1 Fluxo de Autenticação
+O processo de autenticação e autorização entre os componentes:
 
+![Fluxo de Autenticação](./images/png/authentication-flow.png)
+
+### 2.2 Fluxo de Requisições
+Como as requisições são processadas através dos diferentes componentes:
+
+![Fluxo de Requisições](./images/png/request-flow.png)
+
+### 2.3 Validação de Token
+Processo detalhado de validação de tokens JWT pelo Kong:
+
+![Validação de Token](./images/png/token-validation-flow.png)
+
+### 2.4 Tratamento de Erros
+Fluxo de tratamento de erros em diferentes níveis:
+
+![Tratamento de Erros](./images/png/error-handling-flow.png)
+
+### 2.5 Processo de Fallback
+Sistema de fallback implementado no BFF:
+
+![Processo de Fallback](./images/png/fallback-flow.png)
+
+## 3. Componentes
+
+### 3.1 BFF (Backend for Frontend)
+- **Porta**: 8080
+- **Tecnologia**: PHP/Apache
+- **Responsabilidades**:
+  - Intermediar comunicação cliente-servidor
+  - Gerenciar tokens
+  - Implementar fallbacks
+  - Formatar respostas
+
+### 3.2 Kong (API Gateway)
+- **Portas**: 
+  - 8000 (Proxy)
+  - 8001 (Admin API)
+- **Responsabilidades**:
+  - Rotear requisições
+  - Validar tokens JWT
+  - Proteger endpoints
+  - Gerenciar tráfego
+
+### 3.3 Keycloak
+- **Porta**: 8082
+- **Responsabilidades**:
+  - Autenticação de usuários
+  - Emissão de tokens JWT
+  - Gerenciamento de realms e clientes
+  - Controle de acessos
+
+### 3.4 API
+- **Porta**: 8081
+- **Tecnologia**: PHP/Apache
+- **Responsabilidades**:
+  - Processar requisições
+  - Validar autenticação
+  - Retornar dados
+  - Logging e debug
+
+## 4. Geração de Diagramas
+
+### 4.1 Pré-requisitos
+- Node.js instalado
+- NPM disponível
+
+### 4.2 Instalação
 ```bash
-# Clone o projeto
-cd app-root
-
-# Suba todos os serviços
-docker-compose up -d --build
-
-# Acesse os serviços nos navegadores:
-# - BFF: http://localhost:8080
-# - API (via Kong): http://localhost:8000/api/produtos (requer JWT)
-# - Keycloak: http://localhost:8082
-# - Kong Admin: http://localhost:8001
+npm install -g @mermaid-js/mermaid-cli
 ```
 
----
+### 4.3 Gerando Diagramas
 
-## 📆 Etapas de Implementação
+#### Windows (PowerShell - Recomendado)
+```powershell
+.\scripts\Generate-Diagrams.ps1
+```
 
-O projeto é dividido em **8 fases sequenciais**, controladas pelos arquivos em `/roo-instructions`:
+#### Windows (Batch)
+```batch
+scripts\gerar-diagramas.bat
+```
 
-| Fase | Descrição | Status |
-|------|------------|--------|
-| 01   | Estrutura inicial + Docker Compose | ✅ |
-| 02   | Configuração do Keycloak e JWT       | ✅ |
-| 03   | Configuração do Kong + proteção JWT    | ✅ |
-| 04   | API PHP com estrutura MVC e mocks  | ✅ |
-| 05   | BFF PHP com requisições via Kong     | ✅ |
-| 06   | Login OAuth2 + sessão JWT           | ✅ |
-| 07   | Interface Bootstrap + navegação      | ✅ |
-| 08   | Testes finais de integração         | ✅ |
+#### Linux/Mac
+```bash
+chmod +x scripts/generate-diagrams.sh
+./scripts/generate-diagrams.sh
+```
 
-Veja os arquivos `.clinerules` dentro da pasta `/roo-instructions` para instruções detalhadas por fase.
+## 5. Estrutura do Projeto
 
----
-
-## 🔹 Integração com o Roo Code
-
-Para utilizar o **Roo Code** na implementação:
-
-1. **Suba apenas o arquivo da fase atual**, por exemplo:
-   ```
-   roo-instructions/fase-03-kong.clinerules
-   ```
-2. Aguarde a implementação.
-3. Valide os critérios listados.
-4. Atualize o `control.clinecheckpoint` com o status `✅ CONCLUÍDO`
-5. Siga para a próxima fase.
-
-> Dica: não envie todos os arquivos juntos para o Roo. Trabalhe **uma fase por vez**.
-
----
-
-## 🔒 Autenticação com Keycloak
-
-- Realm: `app-demo`
-- Client: `frontend-bff` (confidential)
-- Usuários:
-  - admin / 123 (role: admin)
-  - usuario / 123 (role: user)
-
----
-
-## 📈 Roteamento via Kong
-
-- Rota da API: `http://localhost:8000/api/*`
-- JWT requerido: emitido pelo Keycloak (algoritmo RS256)
-- O Kong protege os endpoints da API com plugin JWT
-
----
-
-## 🌟 Próximos passos sugeridos
-
-- [ ] Adicionar banco de dados e persistência real
-- [ ] Middleware de validação JWT dentro da API
-- [ ] Integração com Grafana e Prometheus para métricas
-- [ ] Testes automatizados com Postman ou PHPUnit
-
----
-
-## 📃 Licença
-Este projeto é demonstrativo e livre para uso e modificação.
-
+```plaintext
+.
+├── api/
+│   ├── public/
+│   │   ├── index.php
+│   │   └── .htaccess
+│   ├── Dockerfile
+│   └── 000-default.conf
+├── bff/
+│   ├── public/
+│   │   └── index.php
+│   └── Dockerfile
+├── scripts/
+│   ├── configure-kong.sh
+│   ├── configure-keycloak.sh
+│   ├── generate-diagrams.sh
+│   ├── Generate-Diagrams.ps1
+│   └── gerar-diagramas.bat
+├── images/
+│   ├── png/
+│   │   └── *.png
+│   └── diagrams.md
+└── docker-compose.yml

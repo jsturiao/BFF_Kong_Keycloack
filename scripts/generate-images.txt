@@ -1,0 +1,21 @@
+# Comandos para gerar as imagens dos diagramas
+
+1. Instalar Mermaid CLI:
+npm install -g @mermaid-js/mermaid-cli
+
+2. Criar pasta de imagens:
+mkdir -p images/png
+
+3. Tornar script executável:
+chmod +x scripts/generate-diagrams.sh
+
+4. Executar script:
+./scripts/generate-diagrams.sh
+
+# Comandos individuais (caso necessário):
+mmdc -i images/diagrams.md -o images/png/high-level-architecture.png -b transparent
+mmdc -i images/diagrams.md -o images/png/authentication-flow.png -b transparent
+mmdc -i images/diagrams.md -o images/png/request-flow.png -b transparent
+mmdc -i images/diagrams.md -o images/png/token-validation-flow.png -b transparent
+mmdc -i images/diagrams.md -o images/png/error-handling-flow.png -b transparent
+mmdc -i images/diagrams.md -o images/png/fallback-flow.png -b transparent
