@@ -17,7 +17,7 @@ RUN mkdir -p /var/log/apache2 \
 
 # Copiar aplicação
 WORKDIR /var/www/html
-COPY public/index.php .
+COPY public/ .
 
 # Configurar permissões
 RUN chown -R www-data:www-data . \
@@ -25,6 +25,8 @@ RUN chown -R www-data:www-data . \
 
 # Debug: mostrar arquivos e configurações
 RUN ls -la /var/www/html \
+    && apache2ctl -M \
+    && apache2ctl -t \
     && cat /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
