@@ -1,14 +1,6 @@
-/* Estilos para o monitor de autenticação */
-
-/* Layout principal */
-.auth-monitor {
-    margin-bottom: 30px;
-}
-
 /* Diagrama do fluxo horizontal */
 .auth-flow-diagram {
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: center;
     padding: 20px;
@@ -31,59 +23,72 @@
     transition: all 0.3s ease;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin: 0;
-    position: relative;
-    z-index: 1;
-}
-
-.auth-flow-diagram .component i {
-    font-size: 24px;
-    display: block;
-    margin-bottom: 8px;
-}
-
-/* Estados dos componentes */
-.component {
     background-color: #ffffff;
     border: 2px solid #dee2e6;
     opacity: 0.7;
 }
 
-.component.processing {
-    background-color: #fff3cd !important;
-    border: 2px solid #ffc107 !important;
-    box-shadow: 0 0 20px rgba(255, 193, 7, 0.5) !important;
-    animation: processing 2s infinite !important;
-    opacity: 1 !important;
-    transform: scale(1.05) !important;
-    z-index: 10 !important;
+.auth-flow-diagram .component i {
+    font-size: 32px; /* Aumentado para 32px */
+    display: block;
+    margin-bottom: 10px;
+    color: #495057;
 }
 
-.component.success {
-    background-color: #d1e7dd !important;
-    border: 2px solid #198754 !important;
-    opacity: 1 !important;
+.auth-flow-diagram .component span {
+    font-size: 14px;
+    color: #495057;
+    display: block;
 }
 
-.component.error {
-    background-color: #f8d7da !important;
-    border: 2px solid #dc3545 !important;
-    animation: shake 0.5s ease-in-out !important;
-    opacity: 1 !important;
+/* Estados dos componentes */
+.auth-flow-diagram .component.processing {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+    animation: processing 2s infinite;
+    opacity: 1;
+    transform: scale(1.05);
+    z-index: 10;
 }
 
-/* Setas */
+.auth-flow-diagram .component.success {
+    background-color: #d1e7dd;
+    border-color: #198754;
+    opacity: 1;
+}
+
+.auth-flow-diagram .component.error {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    animation: shake 0.5s ease-in-out;
+    opacity: 1;
+}
+
+/* Setas horizontais */
 .flow-arrow {
-    color: #6c757d;
+    flex: 0 0 auto;
     font-size: 24px;
-    margin: 0 10px;
+    color: #6c757d;
+    margin: 0 5px;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Animações */
 @keyframes processing {
-    0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
-    50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 193, 7, 0.8); }
-    100% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
+    0% { 
+        transform: scale(1); 
+        box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+    }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+    }
+    100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+    }
 }
 
 @keyframes shake {
@@ -94,7 +99,7 @@
 
 /* Área de logs */
 .auth-logs {
-    height: 600px; /* Aumentei a altura */
+    height: 400px;
     overflow-y: auto;
     background-color: #1e1e1e;
     color: #d4d4d4;
@@ -104,12 +109,10 @@
     font-size: 12px;
 }
 
-
 .log-entry {
     margin-bottom: 8px;
     background-color: rgba(255,255,255,0.05);
     border-radius: 4px;
-    overflow: hidden;
 }
 
 .log-header {
@@ -136,18 +139,21 @@
 .log-entry .level.error { background-color: #4d1f1f; color: #f14c4c; }
 .log-entry .level.success { background-color: #1f4d1f; color: #4cf14c; }
 
-/* Mobile */
+/* Responsividade */
 @media (max-width: 768px) {
-    .component {
+    .auth-flow-diagram .component {
         width: 120px;
         padding: 10px;
     }
 
-    .component i {
-        font-size: 20px;
+    .auth-flow-diagram .component i {
+        font-size: 24px;
+        margin-bottom: 5px;
     }
 
     .flow-arrow {
         font-size: 20px;
     }
 }
+
+/* Outras classes mantidas */

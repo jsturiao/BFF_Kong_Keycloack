@@ -4,29 +4,18 @@ class AuthMonitor {
         this.stepDelay = 3000;
         this.components = ['client', 'bff', 'kong', 'keycloak', 'api'];
         this.componentDetails = window.componentDetails;
-        this.initialize();
-    }
-
-    initialize() {
         this.initializeEventListeners();
-        this.resetComponents();
     }
 
     initializeEventListeners() {
-        const form = document.getElementById('authForm');
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.startAuthentication();
-            });
-        }
+        document.getElementById('authForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.startAuthentication();
+        });
 
-        const flowType = document.getElementById('flowType');
-        if (flowType) {
-            flowType.addEventListener('change', (e) => {
-                this.updateFormFields(e.target.value);
-            });
-        }
+        document.getElementById('flowType')?.addEventListener('change', (e) => {
+            this.updateFormFields(e.target.value);
+        });
     }
 
     updateFormFields(flowType) {
@@ -104,12 +93,21 @@ class AuthMonitor {
     async processStep(component, message, details = null) {
         this.markComponentProcessing(component);
         this.addLog('info', `[${component.toUpperCase()}] ${message}`, details);
+        if (this.componentDetails) {
+            this.componentDetails.addEvent(component, {
+                type: 'process',
+                level: 'info',
+                message: message,
+                details: details,
+                timestamp: new Date().toLocaleTimeString()
+            });
+        }
         await this.delay(this.stepDelay);
         this.markComponentSuccess(component);
     }
 
     markComponentProcessing(component) {
-        const el = document.querySelector(`.auth-flow-diagram .component.${component}`);
+        const el = document.querySelector(`.component.${component}`);
         if (el) {
             el.classList.remove('success', 'error');
             el.classList.add('processing');
@@ -118,7 +116,7 @@ class AuthMonitor {
     }
 
     markComponentSuccess(component) {
-        const el = document.querySelector(`.auth-flow-diagram .component.${component}`);
+        const el = document.querySelector(`.component.${component}`);
         if (el) {
             el.classList.remove('processing', 'error');
             el.classList.add('success');
@@ -126,7 +124,7 @@ class AuthMonitor {
     }
 
     markComponentError(component) {
-        const el = document.querySelector(`.auth-flow-diagram .component.${component}`);
+        const el = document.querySelector(`.component.${component}`);
         if (el) {
             el.classList.remove('processing', 'success');
             el.classList.add('error');
@@ -135,7 +133,7 @@ class AuthMonitor {
 
     resetComponents() {
         this.components.forEach(component => {
-            const el = document.querySelector(`.auth-flow-diagram .component.${component}`);
+            const el = document.querySelector(`.component.${component}`);
             if (el) {
                 el.classList.remove('processing', 'success', 'error');
             }
@@ -144,7 +142,7 @@ class AuthMonitor {
 
     getLastActiveComponent() {
         for (let i = this.components.length - 1; i >= 0; i--) {
-            const el = document.querySelector(`.auth-flow-diagram .component.${this.components[i]}`);
+            const el = document.querySelector(`.component.${this.components[i]}`);
             if (el?.classList.contains('processing')) {
                 return this.components[i];
             }

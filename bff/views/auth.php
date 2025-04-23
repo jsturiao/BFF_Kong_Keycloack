@@ -14,46 +14,42 @@ ob_start();
 ?>
 
 <div class="auth-monitor">
+    <!-- Fluxo de Autenticação -->
     <div class="card mb-3">
         <div class="card-header">
             <h5 class="mb-0"><i class="bi bi-diagram-2"></i> Fluxo de Autenticação</h5>
         </div>
         <div class="card-body p-0">
             <div class="auth-flow-diagram">
-                <!-- Cliente -->
-                <div class="component client" data-component="client">
+                <div class="component client">
                     <i class="bi bi-laptop"></i>
                     <span>Cliente</span>
                 </div>
                 
                 <div class="flow-arrow">→</div>
                 
-                <!-- BFF -->
-                <div class="component bff" data-component="bff">
+                <div class="component bff">
                     <i class="bi bi-box-arrow-in-down-right"></i>
                     <span>BFF</span>
                 </div>
                 
                 <div class="flow-arrow">→</div>
                 
-                <!-- Kong -->
-                <div class="component kong" data-component="kong">
+                <div class="component kong">
                     <i class="bi bi-shield-check"></i>
                     <span>Kong</span>
                 </div>
                 
                 <div class="flow-arrow">→</div>
                 
-                <!-- Keycloak -->
-                <div class="component keycloak" data-component="keycloak">
+                <div class="component keycloak">
                     <i class="bi bi-key"></i>
                     <span>Keycloak</span>
                 </div>
                 
                 <div class="flow-arrow">→</div>
                 
-                <!-- API -->
-                <div class="component api" data-component="api">
+                <div class="component api">
                     <i class="bi bi-hdd-rack"></i>
                     <span>API</span>
                 </div>
@@ -67,7 +63,7 @@ ob_start();
         <?php include __DIR__ . '/partials/logs.php'; ?>
     </div>
 
-    <!-- Modais -->
+    <!-- Modais de detalhes -->
     <?php foreach (['client', 'bff', 'kong', 'keycloak', 'api'] as $component): ?>
     <div class="modal fade" id="<?= $component ?>Modal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -89,11 +85,10 @@ ob_start();
 </div>
 
 <script>
-// Inicializa os listeners de clique dos componentes
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.component').forEach(component => {
+    document.querySelectorAll('.auth-flow-diagram .component').forEach(component => {
         component.addEventListener('click', () => {
-            const componentType = component.dataset.component;
+            const componentType = component.classList[1];
             if (window.componentDetails) {
                 window.componentDetails.showComponentDetails(componentType);
             }
