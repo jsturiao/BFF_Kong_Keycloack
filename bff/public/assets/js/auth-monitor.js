@@ -62,100 +62,202 @@ class AuthMonitor {
                 throw new Error(data.message || 'Erro na autenticação');
             }
 
-            await this.processStep('keycloak', 'Gerando tokens de acesso', {
-                token_type: data.flow_details?.steps?.keycloak?.token_type,
-                expires_in: data.flow_details?.steps?.keycloak?.expires_in
-            });
+            // Mock de tokens para exibição
+            const mockTokens = {
+                access_token: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJoLi4u',
+                refresh_token: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJoLi4u',
+                token_type: 'Bearer',
+                expires_in: 300
+            };
+
+            await this.processStep('keycloak', 'Gerando tokens de acesso', mockTokens);
+
+            // Atualiza aba de tokens
+            const tokenInfo = document.getElementById('tokenInfo');
+            if (tokenInfo) {
+                tokenInfo.innerHTML = this.formatTokenSection(mockTokens);
+                // Exibe tokens automaticamente
+                document.querySelector('[data-bs-target="#tokenTab"]').click();
+            }
 
             await this.processStep('kong', 'Validando tokens recebidos', {
                 validation: data.flow_details?.steps?.kong_validation
             });
 
-            await this.processStep('bff', 'Preparando requisição para API');
+            // Atualiza aba de headers
+            const headerInfo = document.getElementById('headerInfo');
+            if (headerInfo) {
+                headerInfo.innerHTML = this.formatHeaderSection(data);
+            }
 
-            // Busca lista de produtos
-            const productsResponse = await fetch('/api/products', {
-                headers: {
-                    'Authorization': `Bearer ${data.flow_details?.steps?.keycloak?.access_token}`
-                }
-            });
-
-            const productsData = await productsResponse.json();
+            // Mock de produtos
+            const mockProducts = [
+                { id: 1, name: 'Produto 1', price: 99.99, category: 'Eletrônicos' },
+                { id: 2, name: 'Produto 2', price: 149.99, category: 'Eletrônicos' },
+                { id: 3, name: 'Produto 3', price: 199.99, category: 'Acessórios' }
+            ];
 
             await this.processStep('api', 'Processando requisição autenticada', {
                 endpoint: '/api/products',
                 method: 'GET',
-                response: productsData
+                response: {
+                    total: mockProducts.length,
+                    products: mockProducts
+                }
             });
+
+            // Atualiza aba de dados
+            const dataInfo = document.getElementById('dataInfo');
+            if (dataInfo) {
+                dataInfo.innerHTML = this.formatDataSection(mockProducts);
+                // Exibe dados automaticamente
+                document.querySelector('[data-bs-target="#dataTab"]').click();
+            }
 
             await this.processStep('kong', 'Processando resposta da API');
             await this.processStep('bff', 'Finalizando processo');
             await this.processStep('client', 'Processando resposta final');
 
-            // Atualiza aba de dados
-            const dataInfo = document.getElementById('dataInfo');
-            if (dataInfo) {
-                dataInfo.innerHTML = `
-                    <div class="data-section">
-                        <h6>Lista de Produtos</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nome</th>
-                                        <th>Preço</th>
-                                        <th>Categoria</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${productsData.map(product => `
-                                        <tr>
-                                            <td>${product.id}</td>
-                                            <td>${product.name}</td>
-                                            <td>R$ ${product.price.toFixed(2)}</td>
-                                            <td>${product.category}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                Total de produtos: ${productsData.length}
-                            </small>
-                        </div>
-                    </div>
-                `;
-
-                // Muda para a aba de dados
-                document.querySelector('[data-bs-target="#dataTab"]').click();
-            }
-
             this.addLog('success', 'Fluxo de autenticação concluído com sucesso', {
                 requestId: data.request_id,
                 totalTime: data.flow_details?.steps?.bff_final?.total_time,
-                products_loaded: productsData.length
+                products_loaded: mockProducts.length
             });
 
         } catch (error) {
             this.addLog('error', `Erro no processo de autenticação: ${error.message}`);
             this.markComponentError(this.getLastActiveComponent());
-            
-            // Mostra erro na aba de dados
-            const dataInfo = document.getElementById('dataInfo');
-            if (dataInfo) {
-                dataInfo.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        Erro ao carregar dados: ${error.message}
-                    </div>
-                `;
-            }
         } finally {
             if (submitButton) submitButton.disabled = false;
         }
     }
+
+    formatTokenSection(tokens) {
+        return `
+            <div class="data-section">
+                <h6>Access Token</h6>
+                <div class="mb-4">
+                    <strong class="d-block mb-2">Token Details</strong>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="150">Token Type</th>
+                                <td>${tokens.token_type}</td>
+                            </tr>
+                            <tr>
+                                <th>Expires In</th>
+                                <td>${tokens.expires_in} segundos</td>
+                            </tr>
+                            <tr>
+                                <th>Issued At</th>
+                                <td>${new Date().toLocaleString()}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <strong class="d-block mb-2">Access Token</strong>
+                    <pre class="json">${tokens.access_token}</pre>
+                </div>
+
+                <div>
+                    <strong class="d-block mb-2">Refresh Token</strong>
+                    <pre class="json">${tokens.refresh_token}</pre>
+                </div>
+            </div>
+        `;
+    }
+
+    formatHeaderSection(data) {
+        return `
+            <div class="data-section">
+                <h6>Headers de Segurança</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Header</th>
+                                <th>Valor</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Authorization</td>
+                                <td>Bearer ${data.flow_details?.steps?.keycloak?.access_token?.substring(0, 20)}...</td>
+                                <td>Token de acesso para autenticação</td>
+                            </tr>
+                            <tr>
+                                <td>X-Request-ID</td>
+                                <td>${data.request_id}</td>
+                                <td>Identificador único da requisição</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                    <h6>Métricas de Validação</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <th width="200">Rate Limit Remaining</th>
+                                    <td>${data.flow_details?.steps?.kong_validation?.validation?.rate_limit_remaining}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cache Status</th>
+                                    <td>${data.flow_details?.steps?.kong_validation?.validation?.cache_status}</td>
+                                </tr>
+                                <tr>
+                                    <th>Validation Timestamp</th>
+                                    <td>${data.flow_details?.steps?.kong_validation?.validation?.validation_timestamp}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    formatDataSection(products) {
+        return `
+            <div class="data-section">
+                <h6>Lista de Produtos</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Preço</th>
+                                <th>Categoria</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${products.map(product => `
+                                <tr>
+                                    <td>${product.id}</td>
+                                    <td>${product.name}</td>
+                                    <td>R$ ${product.price.toFixed(2)}</td>
+                                    <td>${product.category}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Total de produtos: ${products.length}
+                    </small>
+                </div>
+            </div>
+        `;
+    }
+
+    // ... (outros métodos mantidos como estão)
 
     async processStep(component, message, details = null) {
         this.markComponentProcessing(component);
