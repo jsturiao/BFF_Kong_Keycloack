@@ -6,11 +6,11 @@
                 <h6 class="mb-0">
                     <i class="bi bi-shield-lock"></i> Controles
                 </h6>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-sm btn-outline-light" onclick="window.authMonitor.startAuthentication()">
+                <div class="btn-group btn-group-sm"> 
+                    <button class="btn btn-sm btn-outline-light btn-success" onclick="window.authMonitor.startAuthentication()"> Iniciar Fluxo
                         <i class="bi bi-play-circle"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-light" onclick="window.authMonitor.clearLogs()">
+                    <button class="btn btn-sm btn-outline-light btn-secondary" onclick="window.authMonitor.clearLogs()"> Limpar Logs
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>

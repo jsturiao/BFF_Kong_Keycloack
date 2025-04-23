@@ -13,142 +13,94 @@ $extraScripts = [
 ob_start();
 ?>
 
-<!-- Container principal -->
 <div class="auth-monitor">
-    <!-- Fluxo de Autenticação (Horizontal) -->
     <div class="card mb-3">
-        <div class="card-header py-2">
+        <div class="card-header">
             <h5 class="mb-0"><i class="bi bi-diagram-2"></i> Fluxo de Autenticação</h5>
         </div>
         <div class="card-body p-0">
             <div class="auth-flow-diagram">
-                <div class="component client" data-status="idle" data-bs-toggle="modal" data-bs-target="#clientModal">
-                    <i class="bi bi-laptop"></i> Cliente
+                <!-- Cliente -->
+                <div class="component client" data-component="client">
+                    <i class="bi bi-laptop"></i>
+                    <span>Cliente</span>
                 </div>
+                
                 <div class="flow-arrow">→</div>
                 
-                <div class="component bff" data-status="idle" data-bs-toggle="modal" data-bs-target="#bffModal">
-                    <i class="bi bi-box-arrow-in-down-right"></i> BFF
+                <!-- BFF -->
+                <div class="component bff" data-component="bff">
+                    <i class="bi bi-box-arrow-in-down-right"></i>
+                    <span>BFF</span>
                 </div>
+                
                 <div class="flow-arrow">→</div>
                 
-                <div class="component kong" data-status="idle" data-bs-toggle="modal" data-bs-target="#kongModal">
-                    <i class="bi bi-shield-check"></i> Kong
+                <!-- Kong -->
+                <div class="component kong" data-component="kong">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Kong</span>
                 </div>
+                
                 <div class="flow-arrow">→</div>
                 
-                <div class="component keycloak" data-status="idle" data-bs-toggle="modal" data-bs-target="#keycloakModal">
-                    <i class="bi bi-key"></i> Keycloak
+                <!-- Keycloak -->
+                <div class="component keycloak" data-component="keycloak">
+                    <i class="bi bi-key"></i>
+                    <span>Keycloak</span>
                 </div>
+                
                 <div class="flow-arrow">→</div>
                 
-                <div class="component api" data-status="idle" data-bs-toggle="modal" data-bs-target="#apiModal">
-                    <i class="bi bi-hdd-rack"></i> API
+                <!-- API -->
+                <div class="component api" data-component="api">
+                    <i class="bi bi-hdd-rack"></i>
+                    <span>API</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Rest of the content (controls and logs) remains the same -->
-    <?php include __DIR__ . '/partials/controls.php'; ?>
-    <?php include __DIR__ . '/partials/logs.php'; ?>
+    <!-- Controles e Logs -->
+    <div class="row g-3">
+        <?php include __DIR__ . '/partials/controls.php'; ?>
+        <?php include __DIR__ . '/partials/logs.php'; ?>
+    </div>
 
-    <!-- Component Details Modals -->
-    <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel">
+    <!-- Modais -->
+    <?php foreach (['client', 'bff', 'kong', 'keycloak', 'api'] as $component): ?>
+    <div class="modal fade" id="<?= $component ?>Modal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="clientModalLabel">
-                        <i class="bi bi-laptop"></i> Cliente
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle"></i>
+                        Detalhes do <?= ucfirst($component) ?>
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="clientDetails">
-                    <div class="placeholder-glow">
-                        <div class="placeholder col-12 mb-3"></div>
-                        <div class="placeholder col-8"></div>
-                    </div>
+                <div class="modal-body">
+                    <div id="<?= $component ?>Details"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="modal fade" id="bffModal" tabindex="-1" aria-labelledby="bffModalLabel">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bffModalLabel">
-                        <i class="bi bi-box-arrow-in-down-right"></i> BFF
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="bffDetails">
-                    <div class="placeholder-glow">
-                        <div class="placeholder col-12 mb-3"></div>
-                        <div class="placeholder col-8"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="kongModal" tabindex="-1" aria-labelledby="kongModalLabel">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="kongModalLabel">
-                        <i class="bi bi-shield-check"></i> Kong Gateway
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="kongDetails">
-                    <div class="placeholder-glow">
-                        <div class="placeholder col-12 mb-3"></div>
-                        <div class="placeholder col-8"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="keycloakModal" tabindex="-1" aria-labelledby="keycloakModalLabel">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="keycloakModalLabel">
-                        <i class="bi bi-key"></i> Keycloak
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="keycloakDetails">
-                    <div class="placeholder-glow">
-                        <div class="placeholder col-12 mb-3"></div>
-                        <div class="placeholder col-8"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="apiModal" tabindex="-1" aria-labelledby="apiModalLabel">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="apiModalLabel">
-                        <i class="bi bi-hdd-rack"></i> API
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="apiDetails">
-                    <div class="placeholder-glow">
-                        <div class="placeholder col-12 mb-3"></div>
-                        <div class="placeholder col-8"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php endforeach; ?>
 </div>
+
+<script>
+// Inicializa os listeners de clique dos componentes
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.component').forEach(component => {
+        component.addEventListener('click', () => {
+            const componentType = component.dataset.component;
+            if (window.componentDetails) {
+                window.componentDetails.showComponentDetails(componentType);
+            }
+        });
+    });
+});
+</script>
 
 <?php
 $content = ob_get_clean();

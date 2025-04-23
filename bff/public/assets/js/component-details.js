@@ -1,7 +1,7 @@
 class ComponentDetailsManager {
     constructor() {
         this.currentFlow = null;
-        this.eventLogs = {
+        this.eventLogs = this.loadEvents() || {
             client: [],
             bff: [],
             kong: [],
@@ -11,11 +11,19 @@ class ComponentDetailsManager {
         this.initializeListeners();
     }
 
+    loadEvents() {
+        const stored = localStorage.getItem('authFlowEvents');
+        return stored ? JSON.parse(stored) : null;
+    }
+
+    saveEvents() {
+        localStorage.setItem('authFlowEvents', JSON.stringify(this.eventLogs));
+    }
+
     initializeListeners() {
-        // Adiciona listeners para clicks nos componentes
         document.querySelectorAll('.component').forEach(component => {
             component.addEventListener('click', (e) => {
-                const componentType = e.currentTarget.classList[1]; // client, bff, kong, etc
+                const componentType = component.classList[1];
                 this.showComponentDetails(componentType);
             });
         });
@@ -25,6 +33,9 @@ class ComponentDetailsManager {
         const modalId = `${componentType}Modal`;
         const detailsId = `${componentType}Details`;
         const modal = new bootstrap.Modal(document.getElementById(modalId));
+        
+        // Recarrega os eventos antes de mostrar
+        this.eventLogs = this.loadEvents() || this.eventLogs;
         
         // Atualiza o conteúdo do modal
         this.updateModalContent(componentType, detailsId);
@@ -39,6 +50,12 @@ class ComponentDetailsManager {
 
         const details = this.getComponentDetails(componentType);
         detailsElement.innerHTML = this.formatDetails(details, componentType);
+
+        // Após renderizar, ativa a tab de eventos
+        const eventsTab = document.querySelector(`#tabs-${componentType} button[data-bs-target="#details-events-${componentType}"]`);
+        if (eventsTab) {
+            eventsTab.click();
+        }
     }
 
     getComponentDetails(componentType) {
@@ -112,7 +129,7 @@ class ComponentDetailsManager {
 
         return {
             ...componentInfo[componentType],
-            events: this.eventLogs[componentType]
+            events: this.eventLogs[componentType] || []
         };
     }
 
@@ -125,19 +142,19 @@ class ComponentDetailsManager {
                 <div class="details-tabs">
                     <ul class="nav nav-tabs" id="tabs-${componentType}" role="tablist">
                         <li class="nav-item">
-                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#details-${componentType}">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#details-main-${componentType}">
                                 Detalhes
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#events-${componentType}">
-                                Eventos
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#details-events-${componentType}">
+                                Eventos (${details.events.length})
                             </button>
                         </li>
                     </ul>
                     
                     <div class="tab-content mt-3">
-                        <div class="tab-pane fade show active" id="details-${componentType}">
+                        <div class="tab-pane fade" id="details-main-${componentType}">
                             <div class="details-content">
                                 <div class="component-info">
                                     <div class="info-item">
@@ -157,7 +174,7 @@ class ComponentDetailsManager {
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="events-${componentType}">
+                        <div class="tab-pane fade show active" id="details-events-${componentType}">
                             ${this.formatEvents(details.events)}
                         </div>
                     </div>
@@ -174,7 +191,7 @@ class ComponentDetailsManager {
         return `
             <div class="events-timeline">
                 ${events.map(event => `
-                    <div class="event-item ${event.level || 'info'}">
+                    <div class="event-item ${event.level}">
                         <div class="event-time">${event.timestamp}</div>
                         <div class="event-message">${event.message}</div>
                         ${event.details ? `
@@ -188,30 +205,37 @@ class ComponentDetailsManager {
         `;
     }
 
-    // Método para adicionar eventos
     addEvent(componentType, event) {
         if (!this.eventLogs[componentType]) {
             this.eventLogs[componentType] = [];
         }
 
         this.eventLogs[componentType].push({
-            timestamp: new Date().toLocaleTimeString(),
-            ...event
+            timestamp: event.timestamp || new Date().toLocaleTimeString(),
+            level: event.level || 'info',
+            message: event.message,
+            details: event.details
         });
 
-        // Se o modal estiver aberto, atualiza o conteúdo
-        const detailsId = `${componentType}Details`;
-        const detailsElement = document.getElementById(detailsId);
-        if (detailsElement && detailsElement.offsetParent !== null) {
-            this.updateModalContent(componentType, detailsId);
+        // Salva os eventos atualizados
+        this.saveEvents();
+
+        // Atualiza o modal se estiver aberto
+        const modalElement = document.getElementById(`${componentType}Modal`);
+        if (modalElement && modalElement.classList.contains('show')) {
+            this.updateModalContent(componentType, `${componentType}Details`);
         }
     }
 
-    // Método para limpar eventos
     clearEvents() {
-        Object.keys(this.eventLogs).forEach(key => {
-            this.eventLogs[key] = [];
-        });
+        this.eventLogs = {
+            client: [],
+            bff: [],
+            kong: [],
+            keycloak: [],
+            api: []
+        };
+        localStorage.removeItem('authFlowEvents');
     }
 }
 

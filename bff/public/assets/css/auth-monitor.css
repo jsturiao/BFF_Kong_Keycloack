@@ -1,116 +1,104 @@
-/* Estilos para o monitor de autenticação */
-
-/* Layout principal */
-.auth-monitor {
-    margin-bottom: 30px;
-}
-
-/* Diagrama do fluxo horizontal */
+/* Diagrama do fluxo */
 .auth-flow-diagram {
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: center;
     padding: 20px;
     gap: 20px;
-    min-height: 120px;
-    background-color: #f8f9fa;
+    background: #f8f9fa;
     border-radius: 8px;
     overflow-x: auto;
-    white-space: nowrap;
-    width: 100%;
+    min-height: 120px;
 }
 
-.flow-step {
-    display: inline-flex;
-    align-items: center;
+/* Componentes base */
+.auth-flow-diagram .component {
     flex: 0 0 auto;
-}
-
-/* Componentes do fluxo */
-.component {
-    flex: 0 0 auto;
-    width: 130px;
+    width: 140px;
     padding: 15px;
     text-align: center;
     border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.5s ease;
+    font-weight: 500;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    background-color: #ffffff;
-    margin: 0;
-}
-
-.component i {
-    font-size: 24px;
-    display: block;
-    margin-bottom: 8px;
-    transition: transform 0.3s ease;
-}
-
-/* Setas horizontais */
-.flow-arrow {
-    flex: 0 0 auto;
-    font-size: 24px;
-    color: #6c757d;
-    margin: 0 5px;
-    display: inline-flex;
-    align-items: center;
-}
-
-/* Estados dos componentes */
-.component[data-status="idle"] {
+    transition: all 0.3s ease;
     background-color: #ffffff;
     border: 2px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     opacity: 0.7;
 }
 
-.component[data-status="processing"] {
-    background-color: #fff3cd;
-    border: 2px solid #ffc107;
-    box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
-    animation: processing 2s infinite;
-    opacity: 1;
-    transform: scale(1.05);
+.auth-flow-diagram .component i {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 8px;
+    color: #495057;
 }
 
-.component[data-status="success"] {
-    background-color: #d1e7dd;
-    border: 2px solid #198754;
-    opacity: 1;
+.auth-flow-diagram .component span {
+    display: block;
+    color: #495057;
 }
 
-.component[data-status="error"] {
-    background-color: #f8d7da;
-    border: 2px solid #dc3545;
-    animation: shake 0.5s ease-in-out;
-    opacity: 1;
+/* Estado: Processando */
+.component.processing {
+    background-color: #fff3cd !important;
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.5) !important;
+    animation: processing 2s infinite !important;
+    transform: scale(1.05) !important;
+    opacity: 1 !important;
+    z-index: 10 !important;
 }
 
-/* Área de controles compacta */
-.auth-monitor .card {
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* Estado: Sucesso */
+.component.success {
+    background-color: #d1e7dd !important;
+    border-color: #198754 !important;
+    opacity: 1 !important;
 }
 
-.auth-monitor .card-header {
-    border-bottom: none;
-    padding: 0.5rem 1rem;
+/* Estado: Erro */
+.component.error {
+    background-color: #f8d7da !important;
+    border-color: #dc3545 !important;
+    animation: shake 0.5s ease-in-out !important;
+    opacity: 1 !important;
 }
 
-.auth-monitor .form-control-sm,
-.auth-monitor .form-select-sm {
-    height: calc(1.5em + 0.5rem + 2px);
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
+/* Setas entre componentes */
+.flow-arrow {
+    color: #6c757d;
+    font-size: 24px;
+    user-select: none;
 }
 
-/* Área de logs */
+/* Animações */
+@keyframes processing {
+    0% { 
+        transform: scale(1); 
+        box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); 
+    }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 20px rgba(255, 193, 7, 0.8); 
+    }
+    100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); 
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Logs */
 .auth-logs {
     height: 400px;
     overflow-y: auto;
-    background-color: #1e1e1e;
+    background: #1e1e1e;
     color: #d4d4d4;
     padding: 10px;
     border-radius: 4px;
@@ -120,7 +108,7 @@
 
 .log-entry {
     margin-bottom: 8px;
-    background-color: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.05);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -130,80 +118,45 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.2);
     cursor: pointer;
 }
 
-/* Tooltips */
-[data-tooltip] {
-    position: relative;
+.log-entry .level {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    min-width: 60px;
+    text-align: center;
 }
 
-[data-tooltip]:before {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-5px);
-    padding: 6px 10px;
-    background-color: rgba(0,0,0,0.9);
-    color: white;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    pointer-events: none;
+.log-entry .level.info { background: #294a70; color: #569cd6; }
+.log-entry .level.warn { background: #4d4200; color: #dcdcaa; }
+.log-entry .level.error { background: #4d1f1f; color: #f14c4c; }
+.log-entry .level.success { background: #1f4d1f; color: #4cf14c; }
+
+/* Log details */
+.log-details {
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid rgba(255,255,255,0.1);
 }
 
-[data-tooltip]:hover:before {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
+.log-details pre.json {
+    margin: 0;
+    white-space: pre-wrap;
 }
 
-/* Animações */
-@keyframes processing {
-    0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
-    50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 193, 7, 0.8); }
-    100% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
-}
+/* Responsividade */
+@media (max-width: 768px) {
+    .auth-flow-diagram .component {
+        width: 120px;
+        padding: 10px;
+    }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-/* Ajustes de largura do container do fluxo */
-.auth-monitor .card-body {
-    padding: 1rem;
-    overflow-x: auto;
-}
-
-.auth-flow-diagram::-webkit-scrollbar {
-    height: 8px;
-}
-
-.auth-flow-diagram::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-.auth-flow-diagram::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-.auth-flow-diagram::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-@media (min-width: 1200px) {
-    .auth-flow-diagram {
-        justify-content: center;
-        gap: 30px;
+    .auth-flow-diagram .component i {
+        font-size: 20px;
+        margin-bottom: 5px;
     }
 }
