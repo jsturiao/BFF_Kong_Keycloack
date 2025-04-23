@@ -10,26 +10,16 @@ class HeaderHelper {
         return false;
     }
 
-    private static function setCorsHeaders() {
-        if (!self::hasHeader('Access-Control-Allow-Origin')) {
-            header('Access-Control-Allow-Origin: *');
-            header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-            header('Access-Control-Allow-Headers: Content-Type, Authorization');
-        }
-    }
-
     public static function setHtmlHeaders() {
         if (!headers_sent()) {
             self::clearHeaders();
             
-            // CORS headers primeiro
-            self::setCorsHeaders();
-            
-            // Headers específicos para HTML
             header('Content-Type: text/html; charset=utf-8');
-            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            header('Cache-Control: no-store, no-cache, must-revalidate');
             header('Pragma: no-cache');
             header('Expires: Sat, 01 Jan 2000 00:00:00 GMT');
+            
+            self::setCorsHeaders();
         }
     }
 
@@ -37,14 +27,22 @@ class HeaderHelper {
         if (!headers_sent()) {
             self::clearHeaders();
             
-            // CORS headers primeiro
-            self::setCorsHeaders();
-            
-            // Headers específicos para JSON
             header('Content-Type: application/json');
-            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            header('Cache-Control: no-store, no-cache, must-revalidate');
             header('Pragma: no-cache');
             header('Expires: Sat, 01 Jan 2000 00:00:00 GMT');
+            
+            self::setCorsHeaders();
+        }
+    }
+
+    public static function setCorsHeaders() {
+        if (!headers_sent()) {
+            if (!self::hasHeader('Access-Control-Allow-Origin')) {
+                header('Access-Control-Allow-Origin: *');
+                header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+                header('Access-Control-Allow-Headers: Content-Type, Authorization');
+            }
         }
     }
 
