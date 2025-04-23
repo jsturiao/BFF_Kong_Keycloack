@@ -1,6 +1,5 @@
-<!-- Detalhes e logs -->
 <div class="col-md-9">
-    <div class="card h-100">
+    <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center py-2">
             <h6 class="mb-0"><i class="bi bi-list-nested"></i> Detalhes do Processo</h6>
             <div class="btn-group btn-group-sm">
@@ -20,7 +19,6 @@
         </div>
         <div class="card-body p-2">
             <div class="tab-content">
-                <!-- Tab de Logs -->
                 <div class="tab-pane fade show active" id="logTab">
                     <div id="authLogs" class="auth-logs">
                         <div class="log-entry">
@@ -31,27 +29,24 @@
                     </div>
                 </div>
 
-                <!-- Tab de Tokens -->
                 <div class="tab-pane fade" id="tokenTab">
-                    <div id="tokenInfo" class="token-info">
+                    <div id="tokenInfo">
                         <div class="alert alert-info">
                             Nenhum token gerado ainda. Inicie um fluxo de autenticação.
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab de Headers -->
                 <div class="tab-pane fade" id="headersTab">
-                    <div id="headerInfo" class="header-info">
+                    <div id="headerInfo">
                         <div class="alert alert-info">
                             Nenhuma informação de headers disponível.
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab de Dados -->
                 <div class="tab-pane fade" id="dataTab">
-                    <div id="dataInfo" class="data-info">
+                    <div id="dataInfo">
                         <div class="alert alert-info">
                             Nenhum dado da API disponível.
                         </div>

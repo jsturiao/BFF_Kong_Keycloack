@@ -16,9 +16,27 @@
             <link href="<?= $css ?>" rel="stylesheet">
         <?php endforeach; ?>
     <?php endif; ?>
+
+    <style>
+        .container-fluid {
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+
+        /* Fix para o backdrop do modal */
+        .modal-backdrop {
+            opacity: 0.5;
+        }
+        .modal-backdrop.fade.show {
+            opacity: 0.5;
+        }
+        body:not(.modal-open) .modal-backdrop {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="container py-4">
+    <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
                 <?= $content ?>
@@ -35,5 +53,14 @@
             <script src="<?= $script ?>"></script>
         <?php endforeach; ?>
     <?php endif; ?>
+
+    <script>
+        // Fix para o backdrop do modal
+        document.addEventListener('hidden.bs.modal', function (event) {
+            document.body.classList.remove('modal-open');
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+        }, false);
+    </script>
 </body>
 </html>
