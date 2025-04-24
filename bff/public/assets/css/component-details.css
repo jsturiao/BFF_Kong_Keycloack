@@ -1,215 +1,121 @@
-/* Estilos para os modais de detalhes dos componentes */
-
-.modal-lg {
-    max-width: 900px;
-}
-
-.modal-content {
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.modal-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-    padding: 1rem;
-}
-
-.modal-header .modal-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.2rem;
-}
-
-.modal-header .modal-title i {
-    font-size: 1.4rem;
-}
-
-/* Conteúdo do Modal */
-.details-section {
-    margin-bottom: 20px;
-}
-
-.details-section h5 {
-    margin-bottom: 8px;
-    color: #333;
-}
-
-.details-section .text-muted {
-    font-size: 0.9rem;
-    margin-bottom: 20px;
-}
-
-/* Tabs */
-.details-tabs .nav-tabs {
-    border-bottom: 1px solid #dee2e6;
-}
-
-.details-tabs .nav-link {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: #6c757d;
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-.details-tabs .nav-link:hover {
-    border-color: #6c757d;
-    color: #495057;
-}
-
-.details-tabs .nav-link.active {
-    border-color: #0d6efd;
-    color: #0d6efd;
-    background-color: transparent;
-}
-
-/* Conteúdo das tabs */
-.tab-content {
-    padding: 15px 0;
-}
-
-/* Informações do componente */
+/* Estilos para detalhes dos componentes */
 .component-info {
-    background-color: #fff;
-    border-radius: 8px;
     padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.info-item {
-    margin-bottom: 15px;
-}
-
-.info-item h6 {
-    color: #0d6efd;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-}
-
-.info-item p {
-    margin: 0;
-    font-size: 0.9rem;
-}
-
-.info-item ul {
-    margin: 0;
-    padding-left: 20px;
-    font-size: 0.9rem;
-}
-
-/* Timeline de eventos */
-.events-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
+.events-list {
     max-height: 400px;
     overflow-y: auto;
 }
 
 .event-item {
-    background-color: #f8f9fa;
-    border-left: 3px solid #0d6efd;
-    padding: 10px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
     border-radius: 4px;
-    transition: transform 0.2s ease;
+    overflow: hidden;
 }
 
-.event-item:hover {
-    transform: translateX(5px);
+.event-item:last-child {
+    margin-bottom: 0;
 }
 
-.event-item.info { border-left-color: #0d6efd; }
-.event-item.success { border-left-color: #198754; background-color: #d1e7dd; }
-.event-item.error { border-left-color: #dc3545; background-color: #f8d7da; }
-.event-item.warning { border-left-color: #ffc107; background-color: #fff3cd; }
+.event-header {
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.03);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-.event-time {
-    font-size: 0.8rem;
+.event-header .timestamp {
+    font-size: 0.875rem;
     color: #6c757d;
-    margin-bottom: 5px;
+    white-space: nowrap;
 }
 
-.event-message {
-    font-weight: 500;
-    margin-bottom: 8px;
-    color: #333;
+.event-header .message {
+    font-size: 0.875rem;
+    color: #212529;
 }
 
 .event-details {
-    background-color: #fff;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 8px;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid rgba(0,0,0,0.05);
 }
 
-/* JSON Formatting */
-pre.json {
-    background-color: #1e1e1e;
-    color: #d4d4d4;
+.event-details pre {
+    margin: 0;
+    font-size: 0.8125rem;
+    background: #f8f9fa;
     padding: 10px;
     border-radius: 4px;
-    font-family: 'Consolas', monospace;
-    font-size: 12px;
-    margin: 0;
-    overflow-x: auto;
-    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-/* Scrollbars */
-.events-timeline::-webkit-scrollbar,
-pre.json::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+/* Níveis de eventos */
+.event-item.info .event-header {
+    border-left: 3px solid #0d6efd;
 }
 
-.events-timeline::-webkit-scrollbar-track,
-pre.json::-webkit-scrollbar-track {
+.event-item.warn .event-header {
+    border-left: 3px solid #ffc107;
+}
+
+.event-item.error .event-header {
+    border-left: 3px solid #dc3545;
+}
+
+.event-item.success .event-header {
+    border-left: 3px solid #198754;
+}
+
+/* Scrollbar personalizada */
+.events-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.events-list::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
-.events-timeline::-webkit-scrollbar-thumb,
-pre.json::-webkit-scrollbar-thumb {
+.events-list::-webkit-scrollbar-thumb {
     background: #888;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
-.events-timeline::-webkit-scrollbar-thumb:hover,
-pre.json::-webkit-scrollbar-thumb:hover {
-    background: #666;
+.events-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
-
-/* Status indicators */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    gap: 4px;
-}
-
-.status-badge.success { background-color: #d1e7dd; color: #0f5132; }
-.status-badge.warning { background-color: #fff3cd; color: #856404; }
-.status-badge.error { background-color: #f8d7da; color: #842029; }
 
 /* Animações */
+.event-item {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.modal.fade .modal-dialog {
-    transform: scale(0.95);
-    transition: transform 0.2s ease-out;
+/* Estado ativo do componente */
+.component.active {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
 }
 
-.modal.show .modal-dialog {
-    transform: scale(1);
+/* Tooltips */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
 }
