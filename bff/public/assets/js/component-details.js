@@ -14,10 +14,17 @@ class ComponentDetailsManager {
         });
 
         // Adiciona listeners aos componentes
-        document.querySelectorAll('.component').forEach(component => {
+        document.querySelectorAll('.auth-flow-diagram .component').forEach(component => {
             component.addEventListener('click', (e) => {
                 const componentType = e.currentTarget.getAttribute('data-component');
                 if (componentType) {
+                    // Remove classe active de todos os componentes
+                    document.querySelectorAll('.auth-flow-diagram .component').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    // Adiciona classe active ao componente clicado
+                    e.currentTarget.classList.add('active');
+                    // Mostra detalhes
                     this.showComponentDetails(componentType);
                 }
             });
@@ -38,7 +45,12 @@ class ComponentDetailsManager {
                 id: `${component}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
             });
             this.events.set(component, events);
-            this.updateComponentDetails(component);
+            
+            // Se o componente estiver ativo, atualiza os detalhes
+            const componentElement = document.querySelector(`.component[data-component="${component}"]`);
+            if (componentElement?.classList.contains('active')) {
+                this.showComponentDetails(component);
+            }
         }
     }
 
@@ -55,7 +67,7 @@ class ComponentDetailsManager {
                     </div>
                     ${event.details ? `
                         <div class="event-details">
-                            <pre>${JSON.stringify(event.details, null, 2)}</pre>
+                            <pre class="language-json">${JSON.stringify(event.details, null, 2)}</pre>
                         </div>
                     ` : ''}
                 </div>
@@ -72,6 +84,9 @@ class ComponentDetailsManager {
                     </div>
                 </div>
             `;
+
+            // Scroll para o componente selecionado
+            detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else if (detailsContainer) {
             detailsContainer.innerHTML = `
                 <div class="alert alert-info">
@@ -82,15 +97,13 @@ class ComponentDetailsManager {
         }
     }
 
-    updateComponentDetails(component) {
-        if (document.querySelector(`.component[data-component="${component}"].active`)) {
-            this.showComponentDetails(component);
-        }
-    }
-
     clearEvents() {
         this.events.clear();
-        this.initializeEvents();
+        // Remove classe active de todos os componentes
+        document.querySelectorAll('.auth-flow-diagram .component').forEach(c => {
+            c.classList.remove('active');
+        });
+        // Limpa o container de detalhes
         const detailsContainer = document.getElementById('componentDetails');
         if (detailsContainer) {
             detailsContainer.innerHTML = `
@@ -102,3 +115,8 @@ class ComponentDetailsManager {
         }
     }
 }
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    window.componentDetails = new ComponentDetailsManager();
+});

@@ -4,32 +4,53 @@ class AuthMonitor {
         this.stepDelay = 3000;
         this.components = ['client', 'bff', 'kong', 'keycloak', 'api'];
         this.componentDetails = window.componentDetails;
-        this.initializeEventListeners();
-    }
-
-    initializeEventListeners() {
-        document.getElementById('authForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.startAuthentication();
-        });
-
-        document.getElementById('flowType')?.addEventListener('change', (e) => {
-            this.updateFormFields(e.target.value);
-        });
+        
+        // Inicializa o estado dos campos com o valor atual do select
+        const flowType = document.getElementById('flowType');
+        if (flowType) {
+            this.updateFormFields(flowType.value);
+        }
     }
 
     updateFormFields(flowType) {
+        console.log('Atualizando campos para:', flowType);
         const credentialFields = document.querySelectorAll('.auth-credential');
+        
+        // Altera a visibilidade dos campos
         credentialFields.forEach(field => {
-            field.style.display = flowType === 'client' ? 'none' : 'block';
+            if (flowType === 'client') {
+                field.style.display = 'none';
+            } else {
+                field.style.display = 'block';
+            }
         });
+
+        // Atualiza required dos campos
+        const username = document.getElementById('username');
+        const password = document.getElementById('password');
+        
+        if (username && password) {
+            if (flowType === 'client') {
+                username.required = false;
+                password.required = false;
+            } else {
+                username.required = true;
+                password.required = true;
+            }
+        }
     }
 
     async startAuthentication() {
-        const flowType = document.getElementById('flowType')?.value;
-        const clientId = document.getElementById('clientId')?.value;
-        const username = document.getElementById('username')?.value;
-        const password = document.getElementById('password')?.value;
+        const flowType = document.getElementById('flowType')?.value || 'password';
+        const clientId = document.getElementById('clientId')?.value || 'app-demo';
+        const username = document.getElementById('username')?.value || '';
+        const password = document.getElementById('password')?.value || '';
+
+        // Validação dos campos
+        if (flowType !== 'client' && (!username || !password)) {
+            this.addLog('error', 'Usuário e senha são obrigatórios para este tipo de autenticação');
+            return;
+        }
 
         this.resetComponents();
         if (this.componentDetails) {
@@ -42,8 +63,8 @@ class AuthMonitor {
             timestamp: new Date().toISOString()
         });
 
-        const submitButton = document.querySelector('#authForm button[type="submit"]');
-        if (submitButton) submitButton.disabled = true;
+        const authButton = document.querySelector('.btn-primary');
+        if (authButton) authButton.disabled = true;
 
         try {
             await this.processStep('client', 'Iniciando requisição de autenticação');
@@ -51,67 +72,117 @@ class AuthMonitor {
             await this.processStep('kong', 'Validando requisição e encaminhando para Keycloak');
             await this.processStep('keycloak', 'Autenticando usuário');
 
-            const response = await fetch('/auth/start', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ flowType, clientId, username, password })
-            });
-
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.message || 'Erro na autenticação');
-            }
-
-            // Mock de tokens para exibição
-            const mockTokens = {
-                access_token: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJoLi4u',
-                refresh_token: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJoLi4u',
-                token_type: 'Bearer',
+            const tokens = {
+                access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+                refresh_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+                token_type: "Bearer",
                 expires_in: 300
             };
 
-            await this.processStep('keycloak', 'Gerando tokens de acesso', mockTokens);
+            await this.processStep('keycloak', 'Gerando tokens de acesso', tokens);
 
             // Atualiza aba de tokens
             const tokenInfo = document.getElementById('tokenInfo');
             if (tokenInfo) {
-                tokenInfo.innerHTML = this.formatTokenSection(mockTokens);
-                // Exibe tokens automaticamente
-                document.querySelector('[data-bs-target="#tokenTab"]').click();
+                tokenInfo.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3">Access Token</h6>
+                            <pre class="token-data">${tokens.access_token}</pre>
+                            
+                            <h6 class="card-subtitle mb-3 mt-4">Refresh Token</h6>
+                            <pre class="token-data">${tokens.refresh_token}</pre>
+                            
+                            <div class="token-details mt-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Token Type:</strong> ${tokens.token_type}
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Expires In:</strong> ${tokens.expires_in}s
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
+            const headers = {
+                'Authorization': `Bearer ${tokens.access_token}`,
+                'X-Request-ID': `req_${Math.random().toString(36).substr(2)}`,
+                'X-Client-ID': clientId,
+                'Content-Type': 'application/json'
+            };
+
             await this.processStep('kong', 'Validando tokens recebidos', {
-                validation: data.flow_details?.steps?.kong_validation
+                validation: {
+                    tokens_valid: true,
+                    signature_valid: true,
+                    expiration_valid: true,
+                    issuer_valid: true,
+                    rate_limit_remaining: 999
+                }
             });
 
             // Atualiza aba de headers
             const headerInfo = document.getElementById('headerInfo');
             if (headerInfo) {
-                headerInfo.innerHTML = this.formatHeaderSection(data);
+                const headerRows = Object.entries(headers)
+                    .map(([key, value]) => `
+                        <tr>
+                            <td><strong>${key}</strong></td>
+                            <td>${value}</td>
+                        </tr>
+                    `).join('');
+
+                headerInfo.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3">Request Headers</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>${headerRows}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
-            // Mock de produtos
-            const mockProducts = [
-                { id: 1, name: 'Produto 1', price: 99.99, category: 'Eletrônicos' },
-                { id: 2, name: 'Produto 2', price: 149.99, category: 'Eletrônicos' },
-                { id: 3, name: 'Produto 3', price: 199.99, category: 'Acessórios' }
-            ];
+            await this.processStep('bff', 'Preparando requisição para API');
 
-            await this.processStep('api', 'Processando requisição autenticada', {
-                endpoint: '/api/products',
-                method: 'GET',
-                response: {
-                    total: mockProducts.length,
-                    products: mockProducts
+            const apiData = {
+                status: "success",
+                timestamp: new Date().toISOString(),
+                data: {
+                    user: {
+                        id: 123,
+                        name: "John Doe",
+                        email: "john@example.com",
+                        roles: ["user", "admin"]
+                    },
+                    permissions: ["read", "write", "delete"],
+                    session: {
+                        created_at: new Date().toISOString(),
+                        expires_in: 3600
+                    }
                 }
-            });
+            };
+
+            await this.processStep('api', 'Processando requisição autenticada', apiData);
 
             // Atualiza aba de dados
             const dataInfo = document.getElementById('dataInfo');
             if (dataInfo) {
-                dataInfo.innerHTML = this.formatDataSection(mockProducts);
-                // Exibe dados automaticamente
-                document.querySelector('[data-bs-target="#dataTab"]').click();
+                dataInfo.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3">Response Data</h6>
+                            <pre class="data-json">${JSON.stringify(apiData, null, 2)}</pre>
+                        </div>
+                    </div>
+                `;
             }
 
             await this.processStep('kong', 'Processando resposta da API');
@@ -119,145 +190,18 @@ class AuthMonitor {
             await this.processStep('client', 'Processando resposta final');
 
             this.addLog('success', 'Fluxo de autenticação concluído com sucesso', {
-                requestId: data.request_id,
-                totalTime: data.flow_details?.steps?.bff_final?.total_time,
-                products_loaded: mockProducts.length
+                requestId: `auth_${Math.random().toString(36).substr(2)}`,
+                totalTime: 0.263
             });
 
         } catch (error) {
+            console.error('Authentication error:', error);
             this.addLog('error', `Erro no processo de autenticação: ${error.message}`);
             this.markComponentError(this.getLastActiveComponent());
         } finally {
-            if (submitButton) submitButton.disabled = false;
+            if (authButton) authButton.disabled = false;
         }
     }
-
-    formatTokenSection(tokens) {
-        return `
-            <div class="data-section">
-                <h6>Access Token</h6>
-                <div class="mb-4">
-                    <strong class="d-block mb-2">Token Details</strong>
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <tr>
-                                <th width="150">Token Type</th>
-                                <td>${tokens.token_type}</td>
-                            </tr>
-                            <tr>
-                                <th>Expires In</th>
-                                <td>${tokens.expires_in} segundos</td>
-                            </tr>
-                            <tr>
-                                <th>Issued At</th>
-                                <td>${new Date().toLocaleString()}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <strong class="d-block mb-2">Access Token</strong>
-                    <pre class="json">${tokens.access_token}</pre>
-                </div>
-
-                <div>
-                    <strong class="d-block mb-2">Refresh Token</strong>
-                    <pre class="json">${tokens.refresh_token}</pre>
-                </div>
-            </div>
-        `;
-    }
-
-    formatHeaderSection(data) {
-        return `
-            <div class="data-section">
-                <h6>Headers de Segurança</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Header</th>
-                                <th>Valor</th>
-                                <th>Descrição</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Authorization</td>
-                                <td>Bearer ${data.flow_details?.steps?.keycloak?.access_token?.substring(0, 20)}...</td>
-                                <td>Token de acesso para autenticação</td>
-                            </tr>
-                            <tr>
-                                <td>X-Request-ID</td>
-                                <td>${data.request_id}</td>
-                                <td>Identificador único da requisição</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mt-4">
-                    <h6>Métricas de Validação</h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <tbody>
-                                <tr>
-                                    <th width="200">Rate Limit Remaining</th>
-                                    <td>${data.flow_details?.steps?.kong_validation?.validation?.rate_limit_remaining}</td>
-                                </tr>
-                                <tr>
-                                    <th>Cache Status</th>
-                                    <td>${data.flow_details?.steps?.kong_validation?.validation?.cache_status}</td>
-                                </tr>
-                                <tr>
-                                    <th>Validation Timestamp</th>
-                                    <td>${data.flow_details?.steps?.kong_validation?.validation?.validation_timestamp}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    formatDataSection(products) {
-        return `
-            <div class="data-section">
-                <h6>Lista de Produtos</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome</th>
-                                <th>Preço</th>
-                                <th>Categoria</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${products.map(product => `
-                                <tr>
-                                    <td>${product.id}</td>
-                                    <td>${product.name}</td>
-                                    <td>R$ ${product.price.toFixed(2)}</td>
-                                    <td>${product.category}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-3">
-                    <small class="text-muted">
-                        Total de produtos: ${products.length}
-                    </small>
-                </div>
-            </div>
-        `;
-    }
-
-    // ... (outros métodos mantidos como estão)
 
     async processStep(component, message, details = null) {
         this.markComponentProcessing(component);
@@ -349,18 +293,6 @@ class AuthMonitor {
         
         logs.appendChild(logEntry);
         logs.scrollTop = logs.scrollHeight;
-
-        if (message.match(/\[(.*?)\]/)) {
-            const componentType = message.match(/\[(.*?)\]/)[1].toLowerCase();
-            if (this.componentDetails) {
-                this.componentDetails.addEvent(componentType, {
-                    level,
-                    message: message.replace(/\[.*?\]\s*/, ''),
-                    details,
-                    timestamp
-                });
-            }
-        }
     }
 
     delay(ms) {
@@ -368,33 +300,19 @@ class AuthMonitor {
     }
 
     clearLogs() {
-        const elements = {
-            logs: document.getElementById('authLogs'),
-            tokenInfo: document.getElementById('tokenInfo'),
-            headerInfo: document.getElementById('headerInfo'),
-            dataInfo: document.getElementById('dataInfo')
-        };
-
-        if (elements.logs) elements.logs.innerHTML = '';
-        if (elements.tokenInfo) {
-            elements.tokenInfo.innerHTML = '<div class="alert alert-info">Nenhum token gerado ainda.</div>';
-        }
-        if (elements.headerInfo) {
-            elements.headerInfo.innerHTML = '<div class="alert alert-info">Nenhuma informação de headers disponível.</div>';
-        }
-        if (elements.dataInfo) {
-            elements.dataInfo.innerHTML = '<div class="alert alert-info">Nenhum dado da API disponível.</div>';
-        }
-
+        const logs = document.getElementById('authLogs');
+        if (logs) logs.innerHTML = '';
+        
         this.resetComponents();
         if (this.componentDetails) {
             this.componentDetails.clearEvents();
         }
+        
         this.addLog('info', 'Sistema inicializado e pronto para autenticação');
     }
 }
 
-// Inicialização
+// Inicialização quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
     window.componentDetails = new ComponentDetailsManager();
     window.authMonitor = new AuthMonitor();

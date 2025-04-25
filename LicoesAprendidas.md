@@ -1,40 +1,47 @@
-# Lições Aprendidas - Configuração da API
+# Lições Aprendidas
 
-## Princípios Estabelecidos
+## 1. Manutenção de Estilos CSS
 
-1. Manter Configurações Simples
-   - Usar um único arquivo de configuração quando possível
-   - Evitar camadas sobrepostas de configuração
-   - Preferir configurações diretas no VirtualHost
+### ⚠️ IMPORTANTE: Não alterar estilos existentes!
 
-2. Apache e PHP
-   - Usar configurações padrão do PHP handler
-   - Centralizar regras de rewrite no VirtualHost
-   - Remover .htaccess em favor de configuração central
+Os seguintes arquivos CSS são considerados ESTÁVEIS e NÃO DEVEM ser modificados:
 
-3. Logs e Debug
-   - Manter logs detalhados durante desenvolvimento
-   - Configurar logs de rewrite para debug
-   - Incluir informações de debug nas respostas JSON
+```
+bff/public/assets/css/
+├── auth-monitor.css     # Estilos do fluxo de autenticação
+├── component-details.css # Estilos dos componentes
+└── tabs.css            # Estilos das abas
+```
 
-4. Segurança e CORS
-   - Configurar CORS no nível do Apache
-   - Usar Kong para validação de JWT
-   - Manter Keycloak como autoridade de autenticação
+### Razões para não modificar:
+1. Os estilos já foram testados e validados
+2. Alterações podem quebrar o layout existente
+3. Mudanças afetam múltiplos componentes interligados
 
-## Padrões a Seguir
+### Procedimento correto para mudanças de estilo:
+1. Criar novo arquivo CSS para novas funcionalidades
+2. Usar prefixos específicos para novos estilos
+3. Documentar qualquer mudança necessária
+4. Obter aprovação antes de modificar estilos existentes
 
-1. Estrutura de Arquivos
-   ```
-   api/
-   ├── Dockerfile
-   ├── 000-default.conf
-   └── public/
-       └── index.php
-   ```
+### Componentes sensíveis:
+- Fluxo de autenticação (diagrama)
+- Estados dos componentes (processando, sucesso, erro)
+- Animações e transições
+- Layout responsivo
 
-2. Ordem de Configuração
-   - Primeiro: Apache básico
-   - Segundo: PHP handler
-   - Terceiro: Rewrite rules
-   - Quarto: CORS e segurança
+## 2. Problemas Conhecidos
+
+Alterações no CSS podem causar:
+- Perda de estados visuais
+- Quebra de animações
+- Inconsistência no layout
+- Comportamentos inesperados em componentes interativos
+
+## 3. Boas Práticas
+
+Para novas funcionalidades:
+1. Sempre criar arquivos CSS separados
+2. Usar nomenclatura específica para classes
+3. Evitar sobrescrever estilos globais
+4. Documentar dependências de estilo

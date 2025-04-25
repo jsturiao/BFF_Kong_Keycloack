@@ -77,6 +77,36 @@ Sistema de fallback implementado no BFF:
   - Retornar dados
   - Logging e debug
 
+### 3.5 Opções de Autenticação
+As três opções de autenticação disponíveis são:
+
+Password Grant
+
+É o fluxo mais comum para aplicações que confiam diretamente no authorization server
+O usuário fornece suas credenciais (username/password) diretamente para a aplicação
+Ideal para aplicações first-party (desenvolvidas pela mesma organização)
+Usado quando há alto nível de confiança entre o client e o authorization server
+Client Credentials
+
+Fluxo para comunicação entre sistemas (M2M - Machine to Machine)
+Não envolve um usuário final, apenas credenciais do client
+Ideal para APIs e serviços em background
+Usado quando um sistema precisa acessar seus próprios recursos
+Não requer interação do usuário
+Authorization Code
+
+Fluxo mais seguro para aplicações web e mobile
+O usuário é redirecionado para o servidor de autorização (Keycloak)
+As credenciais são fornecidas diretamente ao authorization server
+O client recebe um código que é trocado por tokens
+Ideal para aplicações third-party
+Implementa o conceito de consentimento do usuário
+Estas três opções foram escolhidas por serem os fluxos mais comuns do OAuth2/OpenID Connect e cobrirem a maioria dos casos de uso em arquiteturas modernas:
+
+Aplicações internas (Password Grant)
+Integrações de sistema (Client Credentials)
+Aplicações externas (Authorization Code)
+
 ## 4. Geração de Diagramas
 
 ### 4.1 Pré-requisitos

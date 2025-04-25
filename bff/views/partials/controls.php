@@ -6,9 +6,9 @@
             </h6>
         </div>
         <div class="card-body p-2">
-            <form id="authForm" class="row g-2">
+            <div class="row g-2">
                 <div class="col-12">
-                    <select class="form-select form-select-sm" id="flowType">
+                    <select class="form-select form-select-sm" id="flowType" onchange="window.authMonitor?.updateFormFields(this.value)">
                         <option value="password">Password Grant</option>
                         <option value="client">Client Credentials</option>
                         <option value="authorization">Authorization Code</option>
@@ -25,15 +25,15 @@
                 </div>
                 <div class="col-12">
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                        <button type="button" class="btn btn-primary btn-sm flex-grow-1" onclick="window.authMonitor?.startAuthentication()">
                             <i class="bi bi-play-circle"></i> Autenticar
                         </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.authMonitor.clearLogs()">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.authMonitor?.clearLogs()">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
