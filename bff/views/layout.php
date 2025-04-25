@@ -61,14 +61,24 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Core JS -->
+    <!-- Core JS (sempre carregado) -->
     <script src="/assets/js/component-details.js"></script>
-    
+    <script src="/assets/js/auth-monitor.js"></script>
+
     <!-- Scripts customizados adicionais -->
     <?php if (isset($extraScripts) && is_array($extraScripts)): ?>
         <?php foreach ($extraScripts as $script): ?>
             <script src="<?= $script ?>"></script>
         <?php endforeach; ?>
     <?php endif; ?>
+
+    <script>
+        // Verifica se os scripts core foram carregados
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Layout loaded, checking core scripts...');
+            if (!window.componentDetails) console.error('ComponentDetails not loaded!');
+            if (!window.authMonitor) console.error('AuthMonitor not loaded!');
+        });
+    </script>
 </body>
 </html>

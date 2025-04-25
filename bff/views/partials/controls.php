@@ -25,10 +25,10 @@
                 </div>
                 <div class="col-12">
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary btn-sm flex-grow-1" onclick="window.authMonitor?.startAuthentication()">
+                        <button type="button" class="btn btn-primary btn-sm flex-grow-1" onclick="window.authMonitor.startAuthentication()">
                             <i class="bi bi-play-circle"></i> Autenticar
                         </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.authMonitor?.clearLogs()">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.authMonitor.clearLogs()">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>

@@ -5,7 +5,6 @@ class AuthMonitor {
         this.components = ['client', 'bff', 'kong', 'keycloak', 'api'];
         this.componentDetails = window.componentDetails;
         
-        // Inicializa o estado dos campos com o valor atual do select
         const flowType = document.getElementById('flowType');
         if (flowType) {
             this.updateFormFields(flowType.value);
@@ -13,10 +12,8 @@ class AuthMonitor {
     }
 
     updateFormFields(flowType) {
-        console.log('Atualizando campos para:', flowType);
         const credentialFields = document.querySelectorAll('.auth-credential');
         
-        // Altera a visibilidade dos campos
         credentialFields.forEach(field => {
             if (flowType === 'client') {
                 field.style.display = 'none';
@@ -24,20 +21,6 @@ class AuthMonitor {
                 field.style.display = 'block';
             }
         });
-
-        // Atualiza required dos campos
-        const username = document.getElementById('username');
-        const password = document.getElementById('password');
-        
-        if (username && password) {
-            if (flowType === 'client') {
-                username.required = false;
-                password.required = false;
-            } else {
-                username.required = true;
-                password.required = true;
-            }
-        }
     }
 
     async startAuthentication() {
@@ -46,7 +29,6 @@ class AuthMonitor {
         const username = document.getElementById('username')?.value || '';
         const password = document.getElementById('password')?.value || '';
 
-        // Validação dos campos
         if (flowType !== 'client' && (!username || !password)) {
             this.addLog('error', 'Usuário e senha são obrigatórios para este tipo de autenticação');
             return;
@@ -73,10 +55,12 @@ class AuthMonitor {
             await this.processStep('keycloak', 'Autenticando usuário');
 
             const tokens = {
-                access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-                refresh_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+                access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1YmxpYy1rZXkifQ.eyJqdGkiOiJkMmY4Y2IyMC1mYzEwLTQwMzItYjFiYy0wODc3ODY0NWQ2YzEiLCJleHAiOjE2MTk3MzY5NjIsIm5iZiI6MCwiaWF0IjoxNjE5NzM2NjYyLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTIzIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYXBwLWRlbW8iLCJhdXRoX3RpbWUiOjAsInNlc3Npb25fc3RhdGUiOiI5YzE3MzU2NS02N2M0LTQ0ZjktYmY3OC1kOGM3ZDNhZjE3ZTciLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iLCJ1c2VyIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSm9obiBEb2UiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqb2huLmRvZSIsImdpdmVuX25hbWUiOiJKb2huIiwiZmFtaWx5X25hbWUiOiJEb2UiLCJlbWFpbCI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIn0.ZGM3MjI1ZWUtZGM0Ny00YWQ5LWJlZjctYTBiNjI2ZjYyNzdk",
+                refresh_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZnJlc2gta2V5In0.eyJqdGkiOiJmMjM0MjM0Mi1jMjM0LTQyMzQtYjIzNC0yMzQyMzQyMzQyMzQiLCJleHAiOjE2MTk3NDAxNjIsIm5iZiI6MCwiaWF0IjoxNjE5NzM2NjYyLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTIzIiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImFwcC1kZW1vIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiOWMxNzM1NjUtNjdjNC00NGY5LWJmNzgtZDhjN2QzYWYxN2U3Iiwic2NvcGUiOiJwcm9maWxlIGVtYWlsIn0.MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkw",
                 token_type: "Bearer",
-                expires_in: 300
+                expires_in: 300,
+                refresh_expires_in: 1800,
+                scope: "profile email"
             };
 
             await this.processStep('keycloak', 'Gerando tokens de acesso', tokens);
@@ -100,6 +84,12 @@ class AuthMonitor {
                                     </div>
                                     <div class="col-6">
                                         <strong>Expires In:</strong> ${tokens.expires_in}s
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Refresh Expires In:</strong> ${tokens.refresh_expires_in}s
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Scope:</strong> ${tokens.scope}
                                     </div>
                                 </div>
                             </div>
@@ -159,7 +149,7 @@ class AuthMonitor {
                     user: {
                         id: 123,
                         name: "John Doe",
-                        email: "john@example.com",
+                        email: "john.doe@example.com",
                         roles: ["user", "admin"]
                     },
                     permissions: ["read", "write", "delete"],
@@ -314,6 +304,7 @@ class AuthMonitor {
 
 // Inicialização quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing monitors...');
     window.componentDetails = new ComponentDetailsManager();
     window.authMonitor = new AuthMonitor();
 });
