@@ -1,0 +1,26 @@
+_format_version: "3.0"
+
+services:
+  - name: api
+    url: http://api/
+    routes:
+      - name: api-route
+        paths:
+          - /api
+    plugins: []
+
+  - name: keycloak
+    url: http://keycloak:8080
+    routes:
+      - name: keycloak-route
+        paths:
+          - /auth
+    plugins: []
+
+  - name: bff
+    url: http://bff/
+    routes:
+      - name: bff-route
+        paths:
+          - /
+    plugins: []

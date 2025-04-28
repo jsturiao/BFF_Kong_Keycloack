@@ -161,3 +161,8 @@ chmod +x scripts/generate-diagrams.sh
 │   │   └── *.png
 │   └── diagrams.md
 └── docker-compose.yml
+```
+
+## 6. Inicialização
+- docker compose build
+- docker compose up -d
